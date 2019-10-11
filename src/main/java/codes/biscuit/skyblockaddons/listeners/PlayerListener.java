@@ -31,6 +31,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
@@ -52,6 +53,8 @@ public class PlayerListener {
     private int timerTick = 1;
     private long lastScreenOpen = -1;
     private long lastMinionSound = -1;
+
+    private int lastSecondHealth = -1;
     private Integer healthUpdate = null;
     private long lastHealthUpdate;
 
@@ -136,17 +139,20 @@ public class PlayerListener {
                         } else {
                             manaPart = splitMessage[1];
                         }
+                        if (healthPart.contains("+")) {
+                            healthPart = healthPart.substring(0, healthPart.indexOf('+'));
+                        }
                         String[] healthSplit = main.getUtils().getNumbersOnly(main.getUtils().stripColor(healthPart)).split(Pattern.quote("/"));
                         int newHealth = Integer.parseInt(healthSplit[0]);
-                        int health = getAttribute(Attribute.HEALTH);
-                        if(newHealth != health) {
-                            healthUpdate = newHealth - health;
+                        main.getScheduler().schedule(Scheduler.CommandType.SET_LAST_SECOND_HEALTH, 1, newHealth);
+                        if (lastSecondHealth != -1 && lastSecondHealth != newHealth) {
+                            healthUpdate = newHealth - lastSecondHealth;
                             lastHealthUpdate = System.currentTimeMillis();
                         }
                         setAttribute(Attribute.HEALTH, newHealth);
                         setAttribute(Attribute.MAX_HEALTH, Integer.parseInt(healthSplit[1]));
                         if (defencePart != null) {
-                            setAttribute(Attribute.DEFENCE, Integer.valueOf(main.getUtils().getNumbersOnly(defencePart).trim()));
+                            setAttribute(Attribute.DEFENCE, Integer.parseInt(main.getUtils().getNumbersOnly(defencePart).trim()));
                         }
                         String[] manaSplit = main.getUtils().getNumbersOnly(manaPart).split(Pattern.quote("/"));
                         setAttribute(Attribute.MANA, Integer.parseInt(manaSplit[0]));
@@ -197,6 +203,12 @@ public class PlayerListener {
                 minimal it can be discarded as a bug. */
             if (main.getConfigValues().isEnabled(Feature.PREVENT_MOVEMENT_ON_DEATH) && e.message.getFormattedText().startsWith("\u00A7r\u00A7c \u2620 \u00A7r\u00A77You ")) {
                 KeyBinding.unPressAllKeys();
+            }
+            // credits to tomotomo, thanks lol
+            if (main.getConfigValues().isEnabled(Feature.SUMMONING_EYE_ALERT) && e.message.getFormattedText().equals("\u00A7r\u00A76\u00A7lRARE DROP! \u00A7r\u00A75Summoning Eye\u00A7r")){
+                main.getUtils().playSound("random.orb", 0.5);
+                main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
+                main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
             }
         }
     }
@@ -255,8 +267,9 @@ public class PlayerListener {
                     EntityPlayerSP p = mc.thePlayer;
                     if (p != null) { //Reverse calculate the player's health by using the player's vanilla hearts. Also calculate the health change for the gui item.
                         int newHealth = Math.round(getAttribute(Attribute.MAX_HEALTH) * (p.getHealth() / p.getMaxHealth()));
-                        if(newHealth != getAttribute(Attribute.HEALTH)) {
-                            healthUpdate = newHealth - getAttribute(Attribute.HEALTH);
+                        main.getScheduler().schedule(Scheduler.CommandType.SET_LAST_SECOND_HEALTH, 1, newHealth);
+                        if (lastSecondHealth != -1 && lastSecondHealth != newHealth) {
+                            healthUpdate = newHealth - lastSecondHealth;
                             lastHealthUpdate = System.currentTimeMillis();
                         }
                         setAttribute(Attribute.HEALTH, newHealth);
@@ -388,6 +401,9 @@ public class PlayerListener {
                                 }
                             }
                         }
+                        if (!foundBoss && main.getRenderListener().getTitleFeature() == Feature.MAGMA_WARNING) {
+                            main.getRenderListener().setTitleFeature(null);
+                        }
                         if (!foundBoss && magmaAccuracy == EnumUtils.MagmaTimerAccuracy.SPAWNED) {
                             magmaAccuracy = EnumUtils.MagmaTimerAccuracy.ABOUT;
                             setMagmaTime(7200, true);
@@ -513,7 +529,7 @@ public class PlayerListener {
         if (main.getUtils().isOnSkyblock() && main.getConfigValues().isEnabled(Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS) &&
                 e.toolTip != null) {
             for (int i = 0; i < e.toolTip.size(); i++) {
-                e.toolTip.set(i, main.getUtils().replaceRomanNumerals(e.toolTip.get(i)));
+                e.toolTip.set(i, RomanNumeralParser.replaceNumeralsWithIntegers(e.toolTip.get(i)));
             }
         }
     }
@@ -532,12 +548,17 @@ public class PlayerListener {
         }
     }
 
-//    @SubscribeEvent(receiveCanceled = true)
-//    public void onKeyInput(InputEvent.KeyInputEvent e) {
-//        if (main.getLockSlot().isPressed()) {
-//            main.getConfigValues().getLockedSlots().add(main.getUtils().getLastHoveredSlot());
-//        }
-//    }
+    @SubscribeEvent(receiveCanceled = true)
+    public void onKeyInput(InputEvent.KeyInputEvent e) {
+        if (main.getOpenSettingsKey().isPressed()) {
+            main.getUtils().setFadingIn(true);
+            main.getRenderListener().setGuiToOpen(PlayerListener.GUIType.MAIN, 1, EnumUtils.SkyblockAddonsGuiTab.FEATURES);
+        }
+        else if (main.getOpenEditLocationsKey().isPressed()) {
+            main.getUtils().setFadingIn(false);
+            main.getRenderListener().setGuiToOpen(PlayerListener.GUIType.EDIT_LOCATIONS, 0, null);
+        }
+    }
 
     public boolean shouldResetMouse() {
         return System.currentTimeMillis() - lastClosedInv > 100;
@@ -599,5 +620,9 @@ public class PlayerListener {
 
     public Set<CoordsPair> getRecentlyLoadedChunks() {
         return recentlyLoadedChunks;
+    }
+
+    public void setLastSecondHealth(int lastSecondHealth) {
+        this.lastSecondHealth = lastSecondHealth;
     }
 }
