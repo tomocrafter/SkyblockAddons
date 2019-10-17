@@ -57,7 +57,7 @@ public class SkyblockAddonsGui extends GuiScreen {
         this.page = page;
     }
 
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
+    @SuppressWarnings({"IntegerDivisionInFloatingPointContext", "deprecation"})
     @Override
     public void initGui() {
         row = 1;
@@ -68,16 +68,17 @@ public class SkyblockAddonsGui extends GuiScreen {
         // Add the buttons for each page.
         Feature[] array;
         if (tab == EnumUtils.SkyblockAddonsGuiTab.FEATURES) {
-            array = new Feature[]{Feature.SHOW_ENCHANTMENTS_REFORGES, Feature.SHOW_BACKPACK_PREVIEW,
+            array = new Feature[]{Feature.SHOW_ENCHANTMENTS_REFORGES, Feature.SHOW_BACKPACK_PREVIEW, Feature.CRAFTING_PATTERNS,
                     Feature.MINION_FULL_WARNING, Feature.FULL_INVENTORY_WARNING,
                     Feature.IGNORE_ITEM_FRAME_CLICKS, Feature.HIDE_FOOD_ARMOR_BAR, Feature.HIDE_HEALTH_BAR,
                     Feature.AVOID_BREAKING_STEMS, Feature.MAGMA_WARNING, Feature.HIDE_PLAYERS_IN_LOBBY, Feature.MINION_STOP_WARNING,
                     Feature.SHOW_ITEM_ANVIL_USES, Feature.LOCK_SLOTS, Feature.DONT_OPEN_PROFILES_WITH_BOW, Feature.STOP_DROPPING_SELLING_RARE_ITEMS,
-                    Feature.MAKE_ENDERCHESTS_GREEN_IN_END, Feature.SUMMONING_EYE_ALERT, Feature.DONT_RESET_CURSOR_INVENTORY,
-                    Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, Feature.DROP_CONFIRMATION};
+                    Feature.MAKE_ENDERCHESTS_GREEN_IN_END, Feature.SUMMONING_EYE_ALERT, Feature.FISHING_SOUND_INDICATOR, Feature.DONT_RESET_CURSOR_INVENTORY,
+                    Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, Feature.DROP_CONFIRMATION, Feature.AVOID_BREAKING_BOTTOM_SUGAR_CANE, 
+                    Feature.ORGANIZE_ENCHANTMENTS, Feature.JUNGLE_AXE_COOLDOWN};
         } else if (tab == EnumUtils.SkyblockAddonsGuiTab.FIXES) {
             array = new Feature[]{Feature.HIDE_BONES, Feature.DISABLE_EMBER_ROD, Feature.HIDE_AUCTION_HOUSE_PLAYERS,
-                    Feature.STOP_BOW_CHARGE_FROM_RESETTING, Feature.AVOID_PLACING_ENCHANTED_ITEMS, Feature.PREVENT_MOVEMENT_ON_DEATH};
+                    Feature.STOP_BOW_CHARGE_FROM_RESETTING, Feature.AVOID_PLACING_ENCHANTED_ITEMS, Feature.PREVENT_MOVEMENT_ON_DEATH, Feature.AVOID_BLINKING_NIGHT_VISION};
         } else if (tab == EnumUtils.SkyblockAddonsGuiTab.GUI_FEATURES) {
             array = new Feature[]{Feature.MAGMA_BOSS_TIMER, Feature.MANA_BAR, Feature.MANA_TEXT, Feature.DEFENCE_TEXT, Feature.DEFENCE_PERCENTAGE,
                     Feature.DEFENCE_ICON, Feature.HEALTH_BAR, Feature.HEALTH_TEXT, Feature.SKELETON_BAR, Feature.HEALTH_UPDATES,

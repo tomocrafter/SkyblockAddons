@@ -67,6 +67,12 @@ public enum Message {
     @Deprecated SETTING_AVOID_BREAKING_BOTTOM_SUGAR_CANE(MessageObject.SETTING, "avoidBreakingBottomSugarCane"), // disallowed
     SETTING_REPLACE_ROMAN_NUMERALS_WITH_NUMBERS(MessageObject.SETTING, "replaceRomanNumeralsWithNumbers"),
     SETTING_CHANGE_BAR_COLOR_WITH_POTIONS(MessageObject.SETTING, "changeBarColorForPotions"),
+    SETTING_CRAFTING_PATTERNS(MessageObject.SETTING, "craftingPatterns"),
+    SETTING_FISHING_SOUND_INDICATOR(MessageObject.SETTING, "soundIndicatorForFishing"),
+    SETTING_AVOID_BLINKING_NIGHT_VISION(MessageObject.SETTING, "avoidBlinkingNightVision"),
+    SETTING_DISABLE_MINION_LOCATION_WARNING(MessageObject.SETTING, "disableMinionLocationWarning"),
+    SETTING_JUNGLE_AXE_COOLDOWN(MessageObject.SETTING, "jungleAxeCooldown"),
+    SETTING_ORGANIZE_ENCHANTMENTS(MessageObject.SETTING, "organizeLongEnchantmentLists"),
 
     BACKPACK_STYLE_REGULAR(MessageObject.STYLE, "regular"),
     BACKPACK_STYLE_COMPACT(MessageObject.STYLE, "compact"),
@@ -121,7 +127,8 @@ public enum Message {
     TAB_GENERAL_SETTINGS(MessageObject.TAB, "generalSettings"),
 
     INVENTORY_TYPE_ENCHANTS(MessageObject.INVENTORY_TYPE, "enchants"),
-    INVENTORY_TYPE_REFORGES(MessageObject.INVENTORY_TYPE, "reforges");
+    INVENTORY_TYPE_REFORGES(MessageObject.INVENTORY_TYPE, "reforges"),
+    INVENTORY_TYPE_CRAFTING(MessageObject.INVENTORY_TYPE, "crafting");
 
     private MessageObject messageObject;
     private String memberName;

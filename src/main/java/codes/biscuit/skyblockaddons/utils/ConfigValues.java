@@ -43,7 +43,7 @@ public class ConfigValues {
     private Language language = Language.ENGLISH;
     private EnumUtils.BackpackStyle backpackStyle = EnumUtils.BackpackStyle.GUI;
     private EnumUtils.TextStyle textStyle = EnumUtils.TextStyle.REGULAR;
-    private Set<Feature> remoteDisabledFeatures = EnumSet.noneOf(Feature.class);
+    @SuppressWarnings("deprecation") private Set<Feature> remoteDisabledFeatures = EnumSet.of(Feature.AVOID_BREAKING_BOTTOM_SUGAR_CANE);
     private Set<Integer> lockedSlots = new HashSet<>();
 
     public ConfigValues(SkyblockAddons main, File settingsConfigFile) {
@@ -101,28 +101,11 @@ public class ConfigValues {
                 }
             }
 
-            for (Feature feature : GUI_FEATURES) {
-                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " ")));
-                String x = property+"X";
-                String y = property+"Y";
-                if (settingsConfig.has(x)) {
-                    coordinates.put(feature, new CoordsPair(settingsConfig.get(x).getAsInt(), settingsConfig.get(y).getAsInt()));
-                }
-            }
 
             if (settingsConfig.has("anchorPoints")) {
                 for (Map.Entry<String, JsonElement> element : settingsConfig.getAsJsonObject("anchorPoints").entrySet()) {
                     Feature feature = Feature.fromId(Integer.valueOf(element.getKey()));
                     anchorPoints.put(feature, EnumUtils.AnchorPoint.fromId(element.getValue().getAsInt()));
-                }
-            }
-
-            for (Feature feature : new Feature[] {Feature.HEALTH_BAR, Feature.MANA_BAR}) {
-                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
-                String w = property+"W";
-                String h = property+"H";
-                if (settingsConfig.has(w)) {
-                    barSizes.put(feature, new CoordsPair(settingsConfig.get(w).getAsInt(), settingsConfig.get(h).getAsInt()));
                 }
             }
 
@@ -132,6 +115,20 @@ public class ConfigValues {
                     guiScales.put(feature, new MutableFloat(element.getValue().getAsFloat()));
                 }
             }
+
+
+            for (Feature feature : GUI_FEATURES) { // Deprecated - Legacy Loader
+                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
+                String x = property+"X";
+                String y = property+"Y";
+                if (settingsConfig.has(x)) {
+                    coordinates.put(feature, new CoordsPair(settingsConfig.get(x).getAsInt(), settingsConfig.get(y).getAsInt()));
+                }
+            }
+            loadFeatureArray("guiPositions", coordinates);
+
+
+            loadFeatureArray("barSizes", barSizes);
 
             loadLegacyColor("warningColor", Feature.MAGMA_WARNING);
             loadLegacyColor("confirmationColor", Feature.DROP_CONFIRMATION);
@@ -206,6 +203,16 @@ public class ConfigValues {
             addDefaultsAndSave();
         }
         loadLanguageFile(true);
+    }
+
+    private void loadFeatureArray(String memberName, Map<Feature, CoordsPair> targetObject) {
+        if (settingsConfig.has(memberName)) {
+            for (Map.Entry<String, JsonElement> element : settingsConfig.getAsJsonObject(memberName).entrySet()) {
+                Feature feature = Feature.fromId(Integer.parseInt(element.getKey()));
+                JsonArray array = element.getValue().getAsJsonArray();
+                targetObject.put(feature, new CoordsPair(array.get(0).getAsInt(), array.get(1).getAsInt()));
+            }
+        }
     }
 
     private void setDefaultColorIfNotSet(ConfigColor color, Feature... features) {
@@ -368,7 +375,6 @@ public class ConfigValues {
     }
 
     private void tryPullingLanguageOnline(Language language) {
-        if (main.getUtils().isDevEnviroment()) return; // it makes all my new entries disappear lol
         FMLLog.info("[SkyblockAddons] Attempting to pull updated language files from online.");
         try {
             URL url = new URL("https://raw.githubusercontent.com/biscuut/SkyblockAddons/master/src/main/resources/lang/" + language.getPath() + ".json");
@@ -386,10 +392,32 @@ public class ConfigValues {
                 }
             }
             connection.disconnect();
-            languageConfig = new Gson().fromJson(response.toString(), JsonObject.class);
+            JsonObject onlineMessages = new Gson().fromJson(response.toString(), JsonObject.class);
+            mergeLanguageJsonObject(onlineMessages, languageConfig);
         } catch (JsonParseException | IllegalStateException | IOException ex) {
             ex.printStackTrace();
             System.out.println("SkyblockAddons: There was an error loading the language file online");
+        }
+    }
+
+    /**
+     * This is used to merge in the online language entries into the existing ones.
+     * Using this method rather than an overwrite allows new entries in development to still exist.
+     *
+     * @param jsonObject The object to be merged (online entries).
+     * @param targetObject The object to me merged in to (local entries).
+     */
+    private void mergeLanguageJsonObject(JsonObject jsonObject, JsonObject targetObject) {
+        for (Map.Entry<String, JsonElement> entry : targetObject.entrySet()) {
+            String memberName = entry.getKey();
+            JsonElement value = entry.getValue();
+            if (jsonObject.has(memberName)) {
+                if (value instanceof JsonObject) {
+                    mergeLanguageJsonObject(jsonObject.getAsJsonObject(memberName), (JsonObject)value);
+                } else {
+                    targetObject.add(memberName, value);
+                }
+            }
         }
     }
 
@@ -434,25 +462,43 @@ public class ConfigValues {
             }
             settingsConfig.add("featureColors", colorsObject);
 
+            JsonObject coordinatesObject = new JsonObject();
+            for (Feature feature : coordinates.keySet()) {
+                JsonArray coordinatesArray = new JsonArray();
+                coordinatesArray.add(new GsonBuilder().create().toJsonTree(coordinates.get(feature).getX()));
+                coordinatesArray.add(new GsonBuilder().create().toJsonTree(coordinates.get(feature).getY()));
+                coordinatesObject.add(String.valueOf(feature.getId()), coordinatesArray);
+            }
+            settingsConfig.add("guiPositions", coordinatesObject);
+
+            JsonObject barSizesObject = new JsonObject();
+            for (Feature feature : barSizes.keySet()) {
+                JsonArray sizesArray = new JsonArray();
+                sizesArray.add(new GsonBuilder().create().toJsonTree(barSizes.get(feature).getX()));
+                sizesArray.add(new GsonBuilder().create().toJsonTree(barSizes.get(feature).getY()));
+                barSizesObject.add(String.valueOf(feature.getId()), sizesArray);
+            }
+            settingsConfig.add("barSizes", barSizesObject);
+
             settingsConfig.addProperty("warningSeconds", warningSeconds);
 
-            for (Feature feature : GUI_FEATURES) {
-                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
-                settingsConfig.addProperty(property+"X", getRelativeCoords(feature).getX());
-                settingsConfig.addProperty(property+"Y", getRelativeCoords(feature).getY());
-            }
+//            for (Feature feature : GUI_FEATURES) {
+//                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
+//                settingsConfig.addProperty(property+"X", getRelativeCoords(feature).getX());
+//                settingsConfig.addProperty(property+"Y", getRelativeCoords(feature).getY());
+//            }
 
-            for (Feature feature : new Feature[] {Feature.HEALTH_BAR, Feature.MANA_BAR}) {
-                if (barSizes.containsKey(feature)) {
-                    String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
-                    int width = getSizes(feature).getX();
-                    int height = getSizes(feature).getY();
-                    if (width != 7 || height > 1) {
-                        settingsConfig.addProperty(property + "W", width);
-                        settingsConfig.addProperty(property + "H", height);
-                    }
-                }
-            }
+//            for (Feature feature : new Feature[] {Feature.HEALTH_BAR, Feature.MANA_BAR}) {
+//                if (barSizes.containsKey(feature)) {
+//                    String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
+//                    int width = getSizes(feature).getX();
+//                    int height = getSizes(feature).getY();
+//                    if (width != 7 || height > 1) {
+//                        settingsConfig.addProperty(property + "W", width);
+//                        settingsConfig.addProperty(property + "H", height);
+//                    }
+//                }
+//            }
 
             settingsConfig.addProperty("textStyle", textStyle.ordinal());
             settingsConfig.addProperty("language", language.getPath());
