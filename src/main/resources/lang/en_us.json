@@ -53,7 +53,7 @@
     "lockSlot": "Lock Slot",
     "dontResetCursorInventory": "Don't Reset Cursor Between Inventories",
     "summoningEyeAlert": "Summoning Eye Alert",
-    "makeEnderchestsInEndGreen": "Make Enderchests in the End Green",
+    "makeEnderchestsInEndGreen": "Change Enderchest Color in the End",
     "changeColor": "Change Color",
     "showInOtherGames": "Show in Other Games",
     "useVanillaTexture": "Use the Vanilla Texture",
@@ -74,7 +74,16 @@
     "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
     "disableMinionLocationWarning": "Disable Location Not Perfect Warnings",
     "jungleAxeCooldown": "Jungle Axe Cooldown",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists",
+    "showItemCooldowns": "Show Item Cooldowns",
+    "speedPercentage": "Speed Percentage",
+    "collectionDisplay": "Skill Progress Display",
+    "onlyMineOresDeepCaverns": "Only Mine Ores in the Deep Caverns",
+    "onlyMineValuablesNether": "Only Mine Valuables in the Nether",
+    "revenantIndicator": "Slayer Armor Progress Indicator",
+    "specialZealotAlert": "Special Zealot Alert",
+    "enableMessageWhenActionPrevented": "Show a Message When an Action is Prevented",
+    "hidePetHealthBar": "Hide Pet Health Bar"
   },
   "messages": {
     "dropConfirmation": "Drop this item again to confirm!",
@@ -109,10 +118,14 @@
     "slotLocked": "This slot is locked!",
     "summoningEyeFound": "Summoning Eye!",
     "cancelledStemBreak": "SkyblockAddons has stopped you from breaking this stem. Use your bare hand if you'd like to actually break it.",
-    "cancelledCaneBreak": "SkyblockAddons has stopped you from breaking this block of sugar cane. Use another tool if you'd actually like to break it.",
     "cancelledProfileOpening": "SkyblockAddons has stopped you from opening this player's profile while holding a bow.",
     "cancelledDropping": "SkyblockAddons has stopped you from dropping this rare item or tool from your hotbar.",
     "clickMoreTimes": "Click/drop this item %times% more times if you really want to do this.",
-    "featureDisabled": "Feature Disabled"
+    "cancelledDeepCaverns": "A SkyblockAddons feature has stopped you from mining this block here.",
+    "featureDisabled": "Feature Disabled",
+    "anvilUses": "Anvil Uses: %uses%",
+    "specialZealotFound": "Special Zealot!",
+    "blockIncompletePatterns": "Block crafting incomplete patterns (recommended)",
+    "searchFeatures": "Search features"
   }
 }

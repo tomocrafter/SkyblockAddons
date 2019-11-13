@@ -2,6 +2,7 @@ package codes.biscuit.skyblockaddons.utils;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import com.google.gson.JsonObject;
+import net.minecraft.util.EnumChatFormatting;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -25,7 +26,6 @@ public enum Message {
     SETTING_GUI_SCALE(MessageObject.SETTING, "guiScale"),
     SETTING_RESET_LOCATIONS(MessageObject.SETTING, "resetLocations"),
     SETTING_SETTINGS(MessageObject.SETTING, "settings"),
-//    SETTING_HIDE_DURABILITY(MessageObject.SETTING, "hideDurability"), // removed
     SETTING_ENCHANTS_AND_REFORGES(MessageObject.SETTING, "showEnchantmentsReforges"),
     SETTING_MINION_STOP_WARNING(MessageObject.SETTING, "minionStopWarning"),
     SETTING_AUCTION_HOUSE_PLAYERS(MessageObject.SETTING, "hideAuctionHousePlayers"),
@@ -73,6 +73,15 @@ public enum Message {
     SETTING_DISABLE_MINION_LOCATION_WARNING(MessageObject.SETTING, "disableMinionLocationWarning"),
     SETTING_JUNGLE_AXE_COOLDOWN(MessageObject.SETTING, "jungleAxeCooldown"),
     SETTING_ORGANIZE_ENCHANTMENTS(MessageObject.SETTING, "organizeLongEnchantmentLists"),
+    SETTING_SHOW_ITEM_COOLDOWNS(MessageObject.SETTING, "showItemCooldowns"),
+    SETTING_COLLECTION_DISPLAY(MessageObject.SETTING, "collectionDisplay"),
+    SETTING_SPEED_PERCENTAGE(MessageObject.SETTING, "speedPercentage"),
+    SETTING_ONLY_MINE_ORES_DEEP_CAVERNS(MessageObject.SETTING, "onlyMineOresDeepCaverns"),
+    SETTING_ENABLE_MESSAGE_WHEN_ACTION_PREVENTED(MessageObject.SETTING, "enableMessageWhenActionPrevented"),
+    SETTING_SLAYER_INDICATOR(MessageObject.SETTING, "revenantIndicator"),
+    SETTING_SPECIAL_ZEALOT_ALERT(MessageObject.SETTING, "specialZealotAlert"),
+    SETTING_ONLY_MINE_VALUABLES_NETHER(MessageObject.SETTING, "onlyMineValuablesNether"),
+    SETTING_HIDE_PET_HEALTH_BAR(MessageObject.SETTING, "hidePetHealthBar"),
 
     BACKPACK_STYLE_REGULAR(MessageObject.STYLE, "regular"),
     BACKPACK_STYLE_COMPACT(MessageObject.STYLE, "compact"),
@@ -80,12 +89,9 @@ public enum Message {
     MESSAGE_DROP_CONFIRMATION(MessageObject.MESSAGES, "dropConfirmation"),
     MESSAGE_MAGMA_BOSS_WARNING(MessageObject.MESSAGES, "magmaBossWarning"),
     MESSAGE_FULL_INVENTORY(MessageObject.MESSAGES, "fullInventory"),
-//    MESSAGE_NEW_VERSION(MessageObject.MESSAGES, "newVersion"),
     MESSAGE_LABYMOD(MessageObject.MESSAGES, "labymod"),
-//    MESSAGE_DISCORD(MessageObject.MESSAGES, "discord"),
     MESSAGE_MINION_CANNOT_REACH(MessageObject.MESSAGES, "minionCannotReach"),
     MESSAGE_MINION_IS_FULL(MessageObject.MESSAGES, "minionIsFull"),
-//    MESSAGE_DEVELOPMENT_VERSION(MessageObject.MESSAGES, "developmentVersion"),
     MESSAGE_TYPE_ENCHANTMENTS(MessageObject.MESSAGES, "typeEnchantmentsHere"),
     MESSAGE_SEPARATE_ENCHANTMENTS(MessageObject.MESSAGES, "separateMultiple"),
     MESSAGE_ENCHANTS_TO_MATCH(MessageObject.MESSAGES, "enchantsToMatch"),
@@ -105,6 +111,11 @@ public enum Message {
     MESSAGE_JOIN_DISCORD(MessageObject.MESSAGES, "joinTheDiscord"),
     MESSAGE_DELETE_OLD_FILE(MessageObject.MESSAGES, "deleteOldFile"),
     MESSAGE_FEATURE_DISABLED(MessageObject.MESSAGES, "featureDisabled"),
+    MESSAGE_ANVIL_USES(MessageObject.MESSAGES, "anvilUses"),
+    MESSAGE_CANCELLED_NON_ORES_BREAK(MessageObject.MESSAGES, "cancelledDeepCaverns"),
+    MESSAGE_SPECIAL_ZEALOT_FOUND(MessageObject.MESSAGES, "specialZealotFound"),
+    MESSAGE_BLOCK_INCOMPLETE_PATTERNS(MessageObject.MESSAGES, "blockIncompletePatterns"),
+    MESSAGE_SEARCH_FEATURES(MessageObject.MESSAGES, "searchFeatures"),
 
     @Deprecated ANCHOR_POINT_TOP_LEFT(MessageObject.ANCHOR_POINT, "topLeft"),
     @Deprecated ANCHOR_POINT_TOP_RIGHT(MessageObject.ANCHOR_POINT, "topRight"),
@@ -178,6 +189,8 @@ public enum Message {
                     text = text.replace("%downloaded%", variables[0]).replace("%total%", variables[1]);
                 } else if (this == Message.UPDATE_MESSAGE_DOWNLOAD_FINISHED) {
                     text = text.replace("%file%", variables[0]);
+                } else if (this == Message.MESSAGE_ANVIL_USES) {
+                    text = text.replace("%uses%", EnumChatFormatting.RED.toString()+variables[0]+EnumChatFormatting.GRAY.toString());
                 }
                 // else if (this == Message.SETTING_ANCHOR_POINT) { //unused at the moment.
 //                    Feature lastHovered = ButtonLocation.getLastHoveredFeature();

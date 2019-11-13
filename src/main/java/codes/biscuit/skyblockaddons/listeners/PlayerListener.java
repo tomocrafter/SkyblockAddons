@@ -14,10 +14,10 @@ import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.projectile.EntityFishHook;
 import net.minecraft.init.Items;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemArmor;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.ContainerChest;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -41,22 +41,26 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.List;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PlayerListener {
 
-    private final Pattern ENCHANTMENT_TOOLTIP_PATTERN = Pattern.compile("\\u00A7.\\u00A7.(\\u00A79[\\w ]+(, )?)+");
+    private final Pattern ENCHANTMENT_TOOLTIP_PATTERN = Pattern.compile("§.§.(§9[\\w ]+(, )?)+");
+    private final Pattern ABILITY_CHAT_PATTERN = Pattern.compile("§r§aUsed §r§6[A-Za-z ]+§r§a! §r§b\\([0-9]+ Mana\\)§r");
+    private final Pattern PROFILE_CHAT_PATTERN = Pattern.compile("§aYou are playing on profile: §e([A-Za-z]+).*");
+    private final Pattern SWITCH_PROFILE_CHAT_PATTERN = Pattern.compile("§aYour profile was changed to: §e([A-Za-z]+).*");
+    private final Pattern COLLECTIONS_CHAT_PATTERN = Pattern.compile("§.\\+(?:§[0-9a-f])?([0-9.]+) §?[0-9a-f]?([A-Za-z]+) (\\([0-9.,]+/[0-9.,]+\\))");
 
     private boolean sentUpdate = false;
     private long lastWorldJoin = -1;
     private long lastBoss = -1;
     private int magmaTick = 1;
     private int timerTick = 1;
-    private long lastScreenOpen = -1;
     private long lastMinionSound = -1;
 
     private int lastSecondHealth = -1;
@@ -119,10 +123,10 @@ public class PlayerListener {
     public void onChatReceive(ClientChatReceivedEvent e) {
         String message = e.message.getUnformattedText();
         if (e.type == 2) {
-            if (message.endsWith("\u270E Mana\u00A7r")) {
+            if (message.endsWith("\u270E Mana§r")) {
                 try {
                     String returnMessage;
-                    if (message.startsWith("\u00A7d\u00A7lTHE END RACE")) { // Might be doing the end race!
+                    if (message.startsWith("§d§lTHE END RACE")) { // Might be doing the end race!
                         // Example Action Bar: '§d§lTHE END RACE §e00:52.370            §b147/147✎ Mana§r'
                         String[] messageSplit = message.split(" {12}");
                         String[] manaSplit = main.getUtils().getNumbersOnly(messageSplit[1]).split(Pattern.quote("/"));
@@ -143,7 +147,13 @@ public class PlayerListener {
                             if (!splitMessage[1].contains("(")) { // Example Collection Bar: '§c986/986❤     §3+1 Mining (10,714.7/15,000)     §b297/323✎ Mana§r'
                                 defencePart = splitMessage[1];
                             } else {
-                                collectionPart = splitMessage[1];
+                                collectionPart = splitMessage[1]; // Another Example: §5+§d30 §5Runecrafting (969/1000)
+                                Matcher matcher = COLLECTIONS_CHAT_PATTERN.matcher(collectionPart);
+                                if (matcher.matches()) {
+                                    main.getRenderListener().setSkillText("+"+matcher.group(1)+" "+matcher.group(3));
+                                    main.getRenderListener().setSkill(matcher.group(2));
+                                    main.getRenderListener().setSkillFadeOutTime(System.currentTimeMillis()+4000);
+                                }
                             }
                             manaPart = splitMessage[2];
                         } else {
@@ -173,12 +183,13 @@ public class PlayerListener {
                         main.getRenderListener().setPredictHealth(false);
                         StringBuilder newMessage = new StringBuilder();
                         boolean showHealth = main.getConfigValues().isDisabled(Feature.HEALTH_BAR) && main.getConfigValues().isDisabled(Feature.HEALTH_TEXT);
+                        boolean showCollection = collectionPart != null && main.getConfigValues().isDisabled(Feature.SKILL_DISPLAY);
                         boolean showDefence = defencePart != null && main.getConfigValues().isDisabled(Feature.DEFENCE_PERCENTAGE) && main.getConfigValues().isDisabled(Feature.DEFENCE_TEXT);
                         boolean showMana = main.getConfigValues().isDisabled(Feature.MANA_BAR) && main.getConfigValues().isDisabled(Feature.MANA_TEXT);
                         if (showHealth) {
                             newMessage.append(healthPart);
                         }
-                        if (collectionPart != null) {
+                        if (showCollection) {
                             if (showHealth) newMessage.append("     ");
                             newMessage.append(collectionPart);
                         }
@@ -213,14 +224,34 @@ public class PlayerListener {
             /*  Resets all user input on dead as to not walk backwards or stafe into the portal
                 Might get trigger upon encountering a non named "You" though this chance is so
                 minimal it can be discarded as a bug. */
-            if (main.getConfigValues().isEnabled(Feature.PREVENT_MOVEMENT_ON_DEATH) && e.message.getFormattedText().startsWith("\u00A7r\u00A7c \u2620 \u00A7r\u00A77You ")) {
+            if (main.getConfigValues().isEnabled(Feature.PREVENT_MOVEMENT_ON_DEATH) && e.message.getFormattedText().startsWith("§r§c \u2620 §r§7You ")) {
                 KeyBinding.unPressAllKeys();
             }
             // credits to tomotomo, thanks lol
-            if (main.getConfigValues().isEnabled(Feature.SUMMONING_EYE_ALERT) && e.message.getFormattedText().equals("\u00A7r\u00A76\u00A7lRARE DROP! \u00A7r\u00A75Summoning Eye\u00A7r")) {
-                main.getUtils().playSound("random.orb", 0.5);
+            if (main.getConfigValues().isEnabled(Feature.SUMMONING_EYE_ALERT) && e.message.getFormattedText().equals("§r§6§lRARE DROP! §r§5Summoning Eye§r")) {
+                main.getUtils().playLoudSound("random.orb", 0.5);
                 main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
                 main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
+            } else if (main.getConfigValues().isEnabled(Feature.SPECIAL_ZEALOT_ALERT) && e.message.getFormattedText().equals("§r§aA special §r§5Zealot §r§ahas spawned nearby!§r")) {
+                main.getUtils().playLoudSound("random.orb", 0.5);
+                main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
+                main.getRenderListener().setTitleFeature(Feature.SPECIAL_ZEALOT_ALERT);
+                main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
+            }
+
+            Matcher matcher = ABILITY_CHAT_PATTERN.matcher(e.message.getFormattedText());
+            if (matcher.matches()) {
+                CooldownManager.put(Minecraft.getMinecraft().thePlayer.getHeldItem());
+            } else {
+                matcher = PROFILE_CHAT_PATTERN.matcher(e.message.getFormattedText());
+                if (matcher.matches()) {
+                    main.getUtils().setProfileName(matcher.group(1));
+                } else {
+                    matcher = SWITCH_PROFILE_CHAT_PATTERN.matcher(e.message.getFormattedText());
+                    if (matcher.matches()) {
+                        main.getUtils().setProfileName(matcher.group(1));
+                    }
+                }
             }
         }
     }
@@ -247,11 +278,16 @@ public class PlayerListener {
         ItemStack heldItem = e.entityPlayer.getHeldItem();
         if (main.getUtils().isOnSkyblock() && e.entityPlayer == mc.thePlayer && heldItem != null) {
             // Prevent using ember rod on personal island
-            if (main.getConfigValues().isEnabled(Feature.FISHING_SOUND_INDICATOR) && heldItem.getItem().equals(Items.fishing_rod) // Update fishing status
+            if (heldItem.getItem().equals(Items.fishing_rod) // Update fishing status
                     && (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || e.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
-                oldBobberIsInWater = false;
-                lastBobberEnteredWater = Long.MAX_VALUE;
-                oldBobberPosY = 0;
+                if (main.getConfigValues().isEnabled(Feature.FISHING_SOUND_INDICATOR)) {
+                    oldBobberIsInWater = false;
+                    lastBobberEnteredWater = Long.MAX_VALUE;
+                    oldBobberPosY = 0;
+                }
+                if (main.getConfigValues().isEnabled(Feature.SHOW_ITEM_COOLDOWNS) && mc.thePlayer.fishEntity != null) {
+                    CooldownManager.put(mc.thePlayer.getHeldItem());
+                }
             } else if (main.getConfigValues().isEnabled(Feature.AVOID_PLACING_ENCHANTED_ITEMS) && EnchantedItemBlacklist.shouldBlockUsage(heldItem)
                     && (e.action == PlayerInteractEvent.Action.RIGHT_CLICK_BLOCK || e.action == PlayerInteractEvent.Action.RIGHT_CLICK_AIR)) {
                 e.setCanceled(true);
@@ -285,7 +321,7 @@ public class PlayerListener {
                     }
                 }
                 if (shouldTriggerFishingIndicator()) { // The logic fits better in its own function
-                    main.getUtils().playSound("random.successful_hit", 0.8);
+                    main.getUtils().playLoudSound("random.successful_hit", 0.8);
                 }
                 if (timerTick == 20) { // Add natural mana every second (increase is based on your max mana).
                     if (main.getRenderListener().isPredictMana()) {
@@ -299,14 +335,13 @@ public class PlayerListener {
                         main.getUtils().checkGameLocationDate();
                         main.getInventoryUtils().checkIfInventoryIsFull(mc, p);
                         main.getInventoryUtils().checkIfWearingSkeletonHelmet(p);
+                        main.getInventoryUtils().checkIfWearingRevenantArmor(p);
                         if (!sentUpdate) {
                             main.getUtils().checkUpdates();
                             sentUpdate = true;
                         }
 
-                        if (mc.currentScreen != null) {
-                            lastScreenOpen = System.currentTimeMillis();
-                        } else if (main.getConfigValues().isEnabled(Feature.ITEM_PICKUP_LOG)
+                        if (mc.currentScreen == null && main.getConfigValues().isEnabled(Feature.ITEM_PICKUP_LOG)
                                 && main.getPlayerListener().didntRecentlyJoinWorld()) {
                             main.getInventoryUtils().getInventoryDifference(p.inventory.mainInventory);
                         }
@@ -332,21 +367,21 @@ public class PlayerListener {
             if (main.getUtils().getLocation() == EnumUtils.Location.ISLAND) {
                 int cooldown = main.getConfigValues().getWarningSeconds() * 1000 + 5000;
                 if (main.getConfigValues().isEnabled(Feature.MINION_FULL_WARNING) &&
-                        entity.getCustomNameTag().equals("\u00A7cMy storage is full! :(")) {
+                        entity.getCustomNameTag().equals("§cMy storage is full! :(")) {
                     long now = System.currentTimeMillis();
                     if (now - lastMinionSound > cooldown) { //this just spams message...
                         lastMinionSound = now;
-                        main.getUtils().playSound("random.pop", 1);
+                        main.getUtils().playLoudSound("random.pop", 1);
                         main.getRenderListener().setSubtitleFeature(Feature.MINION_FULL_WARNING);
                         main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                     }
                 } else if (main.getConfigValues().isEnabled(Feature.MINION_STOP_WARNING) &&
-                        entity.getCustomNameTag().startsWith("\u00A7cI can\'t reach any ")) {
+                        entity.getCustomNameTag().startsWith("§cI can\'t reach any ")) {
                     long now = System.currentTimeMillis();
                     if (now - lastMinionSound > cooldown) {
                         lastMinionSound = now;
-                        main.getUtils().playSound("random.orb", 1);
-                        String mobName = entity.getCustomNameTag().split(Pattern.quote("\u00A7cI can\'t reach any "))[1].toLowerCase();
+                        main.getUtils().playLoudSound("random.orb", 1);
+                        String mobName = entity.getCustomNameTag().split(Pattern.quote("§cI can\'t reach any "))[1].toLowerCase();
                         if (mobName.lastIndexOf("s") == mobName.length() - 1) {
                             mobName = mobName.substring(0, mobName.length() - 1);
                         }
@@ -426,7 +461,7 @@ public class PlayerListener {
                         }
                     }
                     if (main.getRenderListener().getTitleFeature() == Feature.MAGMA_WARNING && magmaTick % 4 == 0) { // Play sound every 4 ticks or 1/5 second.
-                        main.getUtils().playSound("random.orb", 0.5);
+                        main.getUtils().playLoudSound("random.orb", 0.5);
                     }
                 }
             }
@@ -512,41 +547,45 @@ public class PlayerListener {
             }
         }
 
-        if (e.toolTip != null && e.toolTip.size() > 1 && main.getUtils().isOnSkyblock()) {
+        if (e.toolTip != null && main.getUtils().isOnSkyblock() && !main.getConfigValues().isRemoteDisabled(Feature.HIDE_GREY_ENCHANTS)) {
+            for (int i = 1; i <= 3; i++) { // only a max of 2 gray enchants are possible
+                if (i >= e.toolTip.size()) continue; // out of bounds
 
-            if (!hoveredItem.getItem().equals(Items.enchanted_book)) {
-                // Clean buggy enchantments at the top of equipment tooltips
-                while(true) {
-                    String tip = e.toolTip.get(1);
-                    if (tip.contains("Respiration") || tip.contains("Aqua Affinity")
-							|| tip.contains("Depth Strider") || tip.contains("Efficiency")) {
-                        e.toolTip.remove(tip);
-                    } else break;
+                GuiScreen gui = Minecraft.getMinecraft().currentScreen;
+                if (gui instanceof GuiChest) {
+                    Container chest = ((GuiChest)gui).inventorySlots;
+                    if (chest instanceof ContainerChest) {
+                        IInventory inventory = ((ContainerChest)chest).getLowerChestInventory();
+                        if (inventory.hasCustomName() && "Enchant Item".equals(inventory.getDisplayName().getUnformattedText())) {
+                            continue; // dont replace enchants when you are enchanting items in an enchantment table
+                        }
+                    }
+                }
+                String line = e.toolTip.get(i);
+                if (!line.startsWith("§5§o§9") && (line.contains("Respiration") || line.contains("Aqua Affinity")
+                        || line.contains("Depth Strider") || line.contains("Efficiency"))) {
+                    e.toolTip.remove(line);
+                    i--;
                 }
             }
             if (main.getConfigValues().isEnabled(Feature.SHOW_ITEM_ANVIL_USES)) {
                 // Anvil Uses ~ original done by Dahn#6036
-                if (hoveredItem.hasTagCompound()) {
-                    NBTTagCompound nbt = hoveredItem.getTagCompound();
-                    if (nbt.hasKey("ExtraAttributes")) {
-                        if (nbt.getCompoundTag("ExtraAttributes").hasKey("anvil_uses")) {
-                            int insertAt = e.toolTip.size();
-                            insertAt--; // 1 line for the rarity
-                            if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips) {
-                                insertAt -= 2; // 1 line for the item name, and 1 line for the nbt
-                                if (e.itemStack.isItemDamaged()) {
-                                    insertAt--; // 1 line for damage
-                                }
-                            }
-                            int anvilUses = nbt.getCompoundTag("ExtraAttributes").getInteger("anvil_uses");
-                            if (nbt.getCompoundTag("ExtraAttributes").hasKey("hot_potato_count")) {
-                                int hotPotatoCount = nbt.getCompoundTag("ExtraAttributes").getInteger("hot_potato_count");
-                                anvilUses -= hotPotatoCount;
-                            }
-                            if (anvilUses > 0) {
-                                e.toolTip.add(insertAt, "Anvil Uses: " + EnumChatFormatting.RED.toString() + anvilUses);
-                            }
+                int anvilUses = main.getUtils().getNBTInteger(hoveredItem, "ExtraAttributes", "anvil_uses");
+                if (anvilUses != -1) {
+                    int insertAt = e.toolTip.size();
+                    insertAt--; // 1 line for the rarity
+                    if (Minecraft.getMinecraft().gameSettings.advancedItemTooltips) {
+                        insertAt -= 2; // 1 line for the item name, and 1 line for the nbt
+                        if (e.itemStack.isItemDamaged()) {
+                            insertAt--; // 1 line for damage
                         }
+                    }
+                    int hotPotatoCount = main.getUtils().getNBTInteger(hoveredItem, "ExtraAttributes", "hot_potato_count");
+                    if (hotPotatoCount != -1) {
+                        anvilUses -= hotPotatoCount;
+                    }
+                    if (anvilUses > 0) {
+                        e.toolTip.add(insertAt, Message.MESSAGE_ANVIL_USES.getMessage(String.valueOf(anvilUses)));
                     }
                 }
             }
@@ -585,9 +624,9 @@ public class PlayerListener {
                     int columns = enchantments.size() < 15 ? 2 : 3;
                     for (int i = 0; !enchantments.isEmpty(); i++) {
                         StringBuilder sb = new StringBuilder();
-                        sb.append("\u00A75\u00A7o");
+                        sb.append("§5§o");
                         for (int j = 0; j < columns && !enchantments.isEmpty(); j++) {
-                            sb.append("\u00A79");
+                            sb.append("§9");
                             sb.append(enchantments.get(0));
                             sb.append(", ");
                             enchantments.remove(0);
@@ -618,7 +657,7 @@ public class PlayerListener {
     public void onKeyInput(InputEvent.KeyInputEvent e) {
         if (main.getOpenSettingsKey().isPressed()) {
             main.getUtils().setFadingIn(true);
-            main.getRenderListener().setGuiToOpen(PlayerListener.GUIType.MAIN, 1, EnumUtils.SkyblockAddonsGuiTab.FEATURES);
+            main.getRenderListener().setGuiToOpen(PlayerListener.GUIType.MAIN, 1, EnumUtils.GuiTab.FEATURES);
         }
         else if (main.getOpenEditLocationsKey().isPressed()) {
             main.getUtils().setFadingIn(false);
@@ -628,10 +667,6 @@ public class PlayerListener {
 
     public boolean shouldResetMouse() {
         return System.currentTimeMillis() - lastClosedInv > 100;
-    }
-
-    public boolean didntRecentlyCloseScreen() {
-        return System.currentTimeMillis() - lastScreenOpen > 500;
     }
 
     public boolean didntRecentlyJoinWorld() {
@@ -707,7 +742,6 @@ public class PlayerListener {
                     lastFishingAlert = currentTime;
                     return true;
                 }
-                return movement < -0.03d;
             }
         }
         return false;

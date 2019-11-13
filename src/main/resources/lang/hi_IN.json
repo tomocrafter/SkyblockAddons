@@ -53,7 +53,7 @@
     "lockSlot": "स्लॉट बंद",
     "dontResetCursorInventory": "सूची के बीच कर्सर को रीसेट न करें",
     "summoningEyeAlert": "सुमोइंग आई अलर्ट",
-    "makeEnderchestsInEndGreen": "एन्ड में हरे रंग में एंडरचेस्ट बनाएं",
+    "makeEnderchestsInEndGreen": "Change Enderchest Color in the End",
     "changeColor": "रंग बदलना",
     "showInOtherGames": "अन्य खेलों में दिखाओ",
     "useVanillaTexture": "वेनिला बनावट का उपयोग करें",
@@ -74,7 +74,13 @@
     "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
     "disableMinionLocationWarning": "Disable Location Not Perfect Warnings",
     "jungleAxeCooldown": "Jungle Axe Cooldown",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists",
+    "showItemCooldowns": "Show Item Cooldowns",
+    "speedPercentage": "Speed Percentage",
+    "collectionDisplay": "Skill Progress Display",
+    "onlyMineOresDeepCaverns": "Only Mine Ores in the Deep Caverns",
+    "revenantIndicator": "Slayer Armor Progress Indicator",
+    "specialZealotAlert": "Special Zealot Alert"
   },
   "messages": {
     "dropConfirmation": "संदेशों -> ड्रॉप क चेतावनी",
@@ -109,10 +115,13 @@
     "slotLocked": "यह स्लॉट बंद है",
     "summoningEyeFound": "सुमोइंग आई!",
     "cancelledStemBreak": "SkyblockAddons ने आपको इस स्टेम को तोड़ने से रोक दिया है।यदि आप वास्तव में इसे तोड़ना चाहते हैं तो अपने हाथ का उपयोग करें।",
-    "cancelledCaneBreak": "SkyblockAddons has stopped you from breaking this block of sugar cane. Use another tool if you'd actually like to break it.",
     "cancelledProfileOpening": "SkyblockAddons has stopped you from opening this player's profile while holding a bow.",
     "cancelledDropping": "SkyblockAddons has stopped you from dropping this rare item or tool from your hotbar.",
     "clickMoreTimes": "इस आइटम को %times% बार क्लिक / ड्रॉप करें यदि आप वास्तव में ऐसा करना चाहते हैं।",
-    "featureDisabled": "Feature Disabled"
+    "cancelledDeepCaverns": "A SkyblockAddons feature has stopped you from mining this block here.",
+    "featureDisabled": "Feature Disabled",
+    "anvilUses": "Anvil Uses: %uses%",
+    "specialZealotFound": "Special Zealot!",
+    "blockIncompletePatterns": "Block crafting incomplete patterns (recommended)"
   }
 }

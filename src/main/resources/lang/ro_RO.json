@@ -53,7 +53,7 @@
     "lockSlot": "Blochează itemul",
     "dontResetCursorInventory": "Nu reseta cursorul între inventare",
     "summoningEyeAlert": "Alertă Summoning Eye",
-    "makeEnderchestsInEndGreen": "Fă culorile cuferelor din end verzi",
+    "makeEnderchestsInEndGreen": "Change Enderchest Color in the End",
     "changeColor": "Schimbă Culoarea",
     "showInOtherGames": "Afișează în alte jocuri",
     "useVanillaTexture": "Utilizează textura vanilla",
@@ -74,7 +74,13 @@
     "avoidBlinkingNightVision": "Evită clipirea Visiune de noapte",
     "disableMinionLocationWarning": "Dezactiveaza Avertizarea De Locatia minionului",
     "jungleAxeCooldown": "Timp ramas pentru a folosi Jungle Axe",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "organizeLongEnchantmentLists": "Organizează Liste Lungi cu Enchant-uri",
+    "showItemCooldowns": "Arată Cooldown-ul Obiectelor",
+    "speedPercentage": "Procentul Vitezei",
+    "collectionDisplay": "Display Progres Abilități",
+    "onlyMineOresDeepCaverns": "Minează Numai Minereuri în Deep Caverns",
+    "revenantIndicator": "Slayer Armor Progress Indicator",
+    "specialZealotAlert": "Special Zealot Alert"
   },
   "messages": {
     "dropConfirmation": "Arunca acest obiect iar ca să confirmi!",
@@ -90,7 +96,7 @@
     "inventoryTypes": {
       "enchants": "Enchant-uri",
       "reforges": "Refăuriri",
-      "crafting": "Crafting"
+      "crafting": "Fabricație"
     },
     "newUpdateAvailable": "O nouă versiune (%version%) este disponibilă!",
     "deleteOldFile": "Instalarea s-a terminat, vă rugam sa deschideți folder-ul cu modurile apăsând butonul de mai jos, închideți Minecraft-ul și ștergeți versiunea cea veche (sau puteți să o ștergeți mai târziu).",
@@ -109,10 +115,13 @@
     "slotLocked": "Acest slot este blocat!",
     "summoningEyeFound": "Summoning Eye!",
     "cancelledStemBreak": "Modul SkyblockAddons te-a oprit din a sparge block-ul. Folosește mana libera dacă ești sigur că vrei sa spargi.",
-    "cancelledCaneBreak": "SkyblockAddons te-a oprit din spargerea acestei trestiei de zahar. Te rog folosește altă unealtă dacă vrei să o spargi.",
     "cancelledProfileOpening": "Modul SkyblockAddons te-a oprit sa deschizi profilul jucătorului in timp ce utilizezi un arc.",
     "cancelledDropping": "Modul SkyblockAddons te-a oprit să arunci acest item sau unealtă rară din inventar.",
     "clickMoreTimes": "Aruncă acest item de încă %times% dacă vrei să faci asta.",
-    "featureDisabled": "Funcție dezactivată"
+    "cancelledDeepCaverns": "O funcție SkyblockAddons te-a oprit din minatul acestui cub.",
+    "featureDisabled": "Funcție dezactivată",
+    "anvilUses": "Utilizări Nicovală: %uses%",
+    "specialZealotFound": "Special Zealot!",
+    "blockIncompletePatterns": "Block crafting incomplete patterns (recommended)"
   }
 }

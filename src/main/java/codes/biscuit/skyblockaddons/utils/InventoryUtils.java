@@ -8,9 +8,13 @@ import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.inventory.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumChatFormatting;
 
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility methods related to player inventories
@@ -25,12 +29,19 @@ public class InventoryUtils {
     /**
      * Display name of the Skeleton Helmet
      */
-    private static final String SKELETON_HELMET_DISPLAY_NAME = "Skeleton's Helmet";
+    private static final String SKELETON_HELMET_ID = "SKELETON_HELMET";
+
+    public static final String MADDOX_BATPHONE_DISPLAYNAME = "\u00A7aMaddox Batphone";
+    public static final String JUNGLE_AXE_DISPLAYNAME = "\u00A7aJungle Axe";
+
+    private static final Pattern REVENANT_UPGRADE_PATTERN = Pattern.compile("§5§o§7Next Upgrade: §a\\+([0-9]+❈) §8\\(§a([0-9,]+)§7/§c([0-9,]+)§8\\)");
 
     private List<ItemStack> previousInventory;
     private Multimap<String, ItemDiff> itemPickupLog = ArrayListMultimap.create();
     private boolean inventoryIsFull;
     private boolean wearingSkeletonHelmet;
+
+    private SlayerArmorProgress[] slayerArmorProgresses = new SlayerArmorProgress[4];
 
     private SkyblockAddons main;
 
@@ -160,7 +171,7 @@ public class InventoryUtils {
             if (!inventoryIsFull) {
                 inventoryIsFull = true;
                 if (mc.currentScreen == null && main.getPlayerListener().didntRecentlyJoinWorld()) {
-                    main.getUtils().playSound("random.orb", 0.5);
+                    main.getUtils().playLoudSound("random.orb", 0.5);
                     main.getRenderListener().setTitleFeature(Feature.FULL_INVENTORY_WARNING);
                     main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                 }
@@ -175,7 +186,7 @@ public class InventoryUtils {
      */
     public void checkIfWearingSkeletonHelmet(EntityPlayerSP p) {
         ItemStack item = p.getEquipmentInSlot(4);
-        if (item != null && item.hasDisplayName() && item.getDisplayName().contains(SKELETON_HELMET_DISPLAY_NAME)) {
+        if (item != null && SKELETON_HELMET_ID.equals(getSkyBlockItemID(item))) {
             wearingSkeletonHelmet = true;
             return;
         }
@@ -228,7 +239,7 @@ public class InventoryUtils {
                         Message.MESSAGE_CLICK_MORE_TIMES.getMessage(String.valueOf(3-dropCount)));
                 lastItem = item;
                 lastDrop = System.currentTimeMillis();
-                main.getUtils().playSound("note.bass", 0.5);
+                main.getUtils().playLoudSound("note.bass", 0.5);
                 return true;
             }
         }
@@ -244,5 +255,53 @@ public class InventoryUtils {
         else if (container instanceof ContainerFurnace) return 6;
         else if (container instanceof ContainerBeacon) return 8;
         else return 0;
+    }
+
+    String getSkyBlockItemID(final ItemStack item) {
+        if (item == null) return null;
+        if (item.hasTagCompound()) {
+            NBTTagCompound skyBlockData = item.getTagCompound().getCompoundTag("ExtraAttributes");
+            return skyBlockData.getString("id");
+        }
+        return null;
+    }
+
+    public void checkIfWearingRevenantArmor(EntityPlayerSP p) {
+        if (main.getConfigValues().isEnabled(Feature.SLAYER_INDICATOR)) {
+            ConfigColor color = main.getConfigValues().getColor(Feature.SLAYER_INDICATOR);
+            for (int i = 3; i > -1; i--) {
+                ItemStack item = p.inventory.armorInventory[i];
+                String itemID = getSkyBlockItemID(item);
+                if (itemID != null && (itemID.startsWith("REVENANT") || itemID.startsWith("TARANTULA"))) {
+                    String progress = null;
+                    List<String> tooltip = item.getTooltip(null, false);
+                    for (String line : tooltip) {
+                        Matcher matcher = REVENANT_UPGRADE_PATTERN.matcher(line);
+                        if (matcher.matches()) { // Example: line§5§o§7Next Upgrade: §a+240❈ §8(§a14,418§7/§c15,000§8)
+                            try {
+//                            progress = color.toString() + matcher.group(2)+"/"+matcher.group(3) + " (" + ConfigColor.GREEN+ matcher.group(1) + color + ")";
+                                float percentage = Float.parseFloat(matcher.group(2).replace(",", "")) / Integer.parseInt(matcher.group(3).replace(",", "")) * 100;
+                                BigDecimal bigDecimal = new BigDecimal(percentage).setScale(0, BigDecimal.ROUND_HALF_UP);
+                                progress = color.toString() + bigDecimal.toString() + "% (" + ConfigColor.GREEN + matcher.group(1) + color + ")";
+                                break;
+                            } catch (NumberFormatException ignored) {
+                            }
+                        }
+                    }
+                    if (progress != null) {
+                        if (slayerArmorProgresses[i] == null) {
+                            slayerArmorProgresses[i] = new SlayerArmorProgress(item, progress);
+                        }
+                        slayerArmorProgresses[i].setProgressText(progress);
+                    }
+                } else {
+                    slayerArmorProgresses[i] = null;
+                }
+            }
+        }
+    }
+
+    public SlayerArmorProgress[] getSlayerArmorProgresses() {
+        return slayerArmorProgresses;
     }
 }

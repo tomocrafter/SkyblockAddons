@@ -53,7 +53,7 @@
     "lockSlot": "לנעול סלוט",
     "dontResetCursorInventory": "אל תאפס את העכבר בין תיקים",
     "summoningEyeAlert": "התראת עין לזימון דרקון",
-    "makeEnderchestsInEndGreen": "הפוך אנדרצ'אסטים לירוקות באנד",
+    "makeEnderchestsInEndGreen": "שנה את הצבע של תיבות האנדר באנד",
     "changeColor": "שנה צבע",
     "showInOtherGames": "הראה במשחקים אחרים",
     "useVanillaTexture": "השתמש בטקסטורה רגילה",
@@ -74,7 +74,13 @@
     "avoidBlinkingNightVision": "למנוע מצמוץ שיקוי ראיית לילה",
     "disableMinionLocationWarning": "ביטול אזהרות מיקום לא מושלם",
     "jungleAxeCooldown": "טעינת גרזן ג'ונגל",
-    "organizeLongEnchantmentLists": "סדר רשימת כישופים ארוכה"
+    "organizeLongEnchantmentLists": "סדר רשימת כישופים ארוכה",
+    "showItemCooldowns": "הראה טעינת חפצים",
+    "speedPercentage": "אחוז מהירות",
+    "collectionDisplay": "מסך התקדמות יכולות",
+    "onlyMineOresDeepCaverns": "תחצוב מתכות רק בדיפ קוורנס",
+    "revenantIndicator": "מד התקדמות עם שריון סלייר",
+    "specialZealotAlert": "התראה של זלוט מיוחד"
   },
   "messages": {
     "dropConfirmation": "זרוק פריט זה שוב לאישור!",
@@ -109,10 +115,13 @@
     "slotLocked": "משבצת זו נעולה!",
     "summoningEyeFound": "עין לזימון דרקון!",
     "cancelledStemBreak": "SkyblockAddons עצר אותך מלשבור את הגידול. תשתמש ביד שלך אם ברצונך לשבור את זה.",
-    "cancelledCaneBreak": "SkyblockAddons עצר אותך מלשבור את כנה הסוכר הזה. תשתמש בכלי אחר בכדי לשבור את זה.",
     "cancelledProfileOpening": "SkyBlockAddons עצר אותך מלפתוח את הפרופיל של האדם בזמן שהחזקתה קשת.",
     "cancelledDropping": "SkyBlockAddons עצר אותך מלהפיל את החפץ או הכלי הנדיר הזה.",
     "clickMoreTimes": "תלחץ/תזרוק את החפץ %times% פעמים נוספות אם אתה בטוח רוצה לעשות את זה.",
-    "featureDisabled": "פיטצ'ר מבוטל"
+    "cancelledDeepCaverns": "פיטצ'ר של SkyblockAddons מנע ממך לחצוב את הבלוק כאן.",
+    "featureDisabled": "פיטצ'ר מבוטל",
+    "anvilUses": "שימוים בסדן: %uses%",
+    "specialZealotFound": "זלוט מיוחד!",
+    "blockIncompletePatterns": "הרכבת בלוק ללא תבנית גמורה (מומלץ)"
   }
 }

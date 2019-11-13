@@ -18,10 +18,7 @@ import java.util.*;
 
 public class ConfigValues {
 
-    private static final int CONFIG_VERSION = 6;
-    private static final Feature[] GUI_FEATURES = {Feature.SKELETON_BAR, Feature.DEFENCE_ICON, Feature.DEFENCE_TEXT,
-            Feature.DEFENCE_PERCENTAGE, Feature.HEALTH_BAR, Feature.HEALTH_TEXT, Feature.MANA_BAR, Feature.MANA_TEXT, Feature.HEALTH_UPDATES,
-            Feature.ITEM_PICKUP_LOG, Feature.MAGMA_BOSS_TIMER, Feature.DARK_AUCTION_TIMER};
+    private static final int CONFIG_VERSION = 7;
 
     private final static float GUI_SCALE_MINIMUM = 0.5F;
     private final static float GUI_SCALE_MAXIMUM = 5;
@@ -44,7 +41,8 @@ public class ConfigValues {
     private EnumUtils.BackpackStyle backpackStyle = EnumUtils.BackpackStyle.GUI;
     private EnumUtils.TextStyle textStyle = EnumUtils.TextStyle.REGULAR;
     @SuppressWarnings("deprecation") private Set<Feature> remoteDisabledFeatures = EnumSet.of(Feature.AVOID_BREAKING_BOTTOM_SUGAR_CANE);
-    private Set<Integer> lockedSlots = new HashSet<>();
+    private Set<Integer> legacyLockedSlots = new HashSet<>();
+    private Map<String, Set<Integer>> profileLockedSlots = new HashMap<>();
 
     public ConfigValues(SkyblockAddons main, File settingsConfigFile) {
         this.main = main;
@@ -74,22 +72,38 @@ public class ConfigValues {
                 addDefaultsAndSave();
                 return;
             }
-            for (JsonElement element : settingsConfig.getAsJsonArray("disabledFeatures")) {
-                Feature feature = Feature.fromId(element.getAsInt());
-                if (feature != null) {
-                    disabledFeatures.add(feature);
+            if (settingsConfig.has("disabledFeatures")) {
+                for (JsonElement element : settingsConfig.getAsJsonArray("disabledFeatures")) {
+                    Feature feature = Feature.fromId(element.getAsInt());
+                    if (feature != null) {
+                        disabledFeatures.add(feature);
+                    }
                 }
             }
             if (settingsConfig.has("lockedSlots")) {
                 for (JsonElement element : settingsConfig.getAsJsonArray("lockedSlots")) {
-                    lockedSlots.add(element.getAsInt());
+                    legacyLockedSlots.add(element.getAsInt());
                 }
             }
 
-            warningSeconds = settingsConfig.get("warningSeconds").getAsInt();
+            if (settingsConfig.has("profileLockedSlots")) {
+                JsonObject profileSlotsObject = settingsConfig.getAsJsonObject("profileLockedSlots");
+                for (Map.Entry<String, JsonElement> entry : profileSlotsObject.entrySet()) {
+                    Set<Integer> slots = new HashSet<>();
+                    for (JsonElement element : entry.getValue().getAsJsonArray()) {
+                        slots.add(element.getAsInt());
+                    }
+                    profileLockedSlots.put(entry.getKey(), slots);
+                }
+            }
+
+            if (settingsConfig.has("warningSeconds")) {
+                warningSeconds = settingsConfig.get("warningSeconds").getAsInt();
+            }
 
             if (settingsConfig.has("language")) {
-                Language configLanguage = Language.getFromPath(settingsConfig.get("language").getAsString().toLowerCase());
+                String languageKey = settingsConfig.get("language").getAsString();
+                Language configLanguage = Language.getFromPath(languageKey);
                 if (configLanguage != null) {
                     language = configLanguage;
                 }
@@ -100,7 +114,6 @@ public class ConfigValues {
                     backpackStyle = EnumUtils.BackpackStyle.values()[ordinal];
                 }
             }
-
 
             if (settingsConfig.has("anchorPoints")) {
                 for (Map.Entry<String, JsonElement> element : settingsConfig.getAsJsonObject("anchorPoints").entrySet()) {
@@ -117,7 +130,7 @@ public class ConfigValues {
             }
 
 
-            for (Feature feature : GUI_FEATURES) { // Deprecated - Legacy Loader
+            for (Feature feature : Feature.getGuiFeatures()) { // Deprecated - Legacy Loader
                 String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
                 String x = property+"X";
                 String y = property+"Y";
@@ -126,7 +139,6 @@ public class ConfigValues {
                 }
             }
             loadFeatureArray("guiPositions", coordinates);
-
 
             loadFeatureArray("barSizes", barSizes);
 
@@ -150,10 +162,6 @@ public class ConfigValues {
                     }
                 }
             }
-
-            setDefaultColorIfNotSet(ConfigColor.BLUE, Feature.MANA_BAR, Feature.MANA_TEXT);
-            setDefaultColorIfNotSet(ConfigColor.GREEN, Feature.DEFENCE_TEXT, Feature.DEFENCE_PERCENTAGE);
-            setDefaultColorIfNotSet(ConfigColor.GOLD, Feature.MAGMA_BOSS_TIMER, Feature.DARK_AUCTION_TIMER);
 
             if (settingsConfig.has("textStyle")) {
                 int ordinal = settingsConfig.get("textStyle").getAsInt();
@@ -198,6 +206,15 @@ public class ConfigValues {
                 }
             } else if (configVersion <= 5) {
                 disabledFeatures.add(Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS);
+            } else if (configVersion <= 6) {
+                putDefaultBarSizes();
+                for (Map.Entry<Feature, CoordsPair> entry : coordinates.entrySet()) {
+                    if (getAnchorPoint(entry.getKey()) == EnumUtils.AnchorPoint.BOTTOM_MIDDLE) {
+                        CoordsPair coords = entry.getValue();
+                        coords.setX(coords.getX()-91);
+                        coords.setY(coords.getY()-39);
+                    }
+                }
             }
         } else {
             addDefaultsAndSave();
@@ -212,12 +229,6 @@ public class ConfigValues {
                 JsonArray array = element.getValue().getAsJsonArray();
                 targetObject.put(feature, new CoordsPair(array.get(0).getAsInt(), array.get(1).getAsInt()));
             }
-        }
-    }
-
-    private void setDefaultColorIfNotSet(ConfigColor color, Feature... features) {
-        for (Feature feature : features) {
-            if (!featureColors.containsKey(feature)) featureColors.put(feature, color);
         }
     }
 
@@ -252,101 +263,53 @@ public class ConfigValues {
                 }
             }
         }
-        featureColors.put(Feature.DROP_CONFIRMATION, ConfigColor.RED);
-        featureColors.put(Feature.MAGMA_WARNING, ConfigColor.RED);
-        featureColors.put(Feature.MANA_TEXT, ConfigColor.BLUE);
-        featureColors.put(Feature.MANA_BAR, ConfigColor.BLUE);
-        featureColors.put(Feature.HEALTH_BAR, ConfigColor.RED);
-        featureColors.put(Feature.HEALTH_TEXT, ConfigColor.RED);
-        featureColors.put(Feature.DEFENCE_TEXT, ConfigColor.GREEN);
-        featureColors.put(Feature.DEFENCE_PERCENTAGE, ConfigColor.GREEN);
-        featureColors.put(Feature.MAGMA_BOSS_TIMER, ConfigColor.GOLD);
-        featureColors.put(Feature.DARK_AUCTION_TIMER, ConfigColor.GOLD);
 
-        Feature[] toDisable = {Feature.DROP_CONFIRMATION, Feature.MINION_STOP_WARNING, Feature.HIDE_HEALTH_BAR,
-            Feature.USE_VANILLA_TEXTURE_DEFENCE, Feature.IGNORE_ITEM_FRAME_CLICKS, Feature.SHOW_BACKPACK_HOLDING_SHIFT,
-            Feature.HEALTH_BAR, Feature.DEFENCE_PERCENTAGE, Feature.HIDE_PLAYERS_IN_LOBBY, Feature.SHOW_MAGMA_TIMER_IN_OTHER_GAMES,
-            Feature.SHOW_DARK_AUCTION_TIMER_IN_OTHER_GAMES, Feature.PREVENT_MOVEMENT_ON_DEATH, Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS};
-        disabledFeatures.addAll(Arrays.asList(toDisable));
+        for (Feature feature : Feature.values()) {
+            ConfigColor color = feature.getDefaultColor();
+            if (color != null) {
+                featureColors.put(feature, color);
+            }
+            if (feature.isDefaultDisabled()) {
+                disabledFeatures.add(feature);
+            }
+        }
+
         setAllCoordinatesToDefault();
+        putDefaultBarSizes();
         saveConfig();
     }
 
     public void setAllCoordinatesToDefault() {
         setAnchorPointsToDefault();
-        for (Feature feature : GUI_FEATURES) {
+        putDefaultBarSizes();
+        for (Feature feature : Feature.getGuiFeatures()) {
             putDefaultCoordinates(feature);
         }
     }
 
     private void setAnchorPointsToDefault() {
-        Feature[] features = {Feature.SKELETON_BAR, Feature.DEFENCE_ICON, Feature.DEFENCE_TEXT,
-                Feature.DEFENCE_PERCENTAGE, Feature.HEALTH_BAR, Feature.HEALTH_TEXT, Feature.MANA_BAR,
-                Feature.MANA_TEXT, Feature.HEALTH_UPDATES};
-        for (Feature feature : features) {
-            anchorPoints.put(feature, EnumUtils.AnchorPoint.HEALTH_BAR);
-        }
-        anchorPoints.put(Feature.ITEM_PICKUP_LOG, EnumUtils.AnchorPoint.TOP_LEFT);
-        features = new Feature[]{Feature.MAGMA_BOSS_TIMER, Feature.DARK_AUCTION_TIMER};
-        for (Feature feature : features) {
-            anchorPoints.put(feature, EnumUtils.AnchorPoint.TOP_RIGHT);
+        for (Feature feature : Feature.getGuiFeatures()) {
+            EnumUtils.AnchorPoint anchorPoint = feature.getAnchorPoint();
+            if (anchorPoint != null) {
+                anchorPoints.put(feature, anchorPoint);
+            }
         }
     }
 
     private void putDefaultCoordinates(Feature feature) {
-        int x = 0;
-        int y = 0;
-        switch (feature) {
-            case SKELETON_BAR:
-                x = 211;
-                y = 28;
-                break;
-            case DEFENCE_ICON:
-                x = 90;
-                y = -24;
-                break;
-            case DEFENCE_TEXT:
-                x = 90;
-                y = -22;
-                break;
-            case DEFENCE_PERCENTAGE:
-                x = 92;
-                y = -14;
-                break;
-            case HEALTH_BAR:
-                x = 41;
-                y = -4;
-                break;
-            case HEALTH_TEXT:
-                x = 40;
-                y = -4;
-                break;
-            case MANA_BAR:
-                x = 141;
-                y = -4;
-                break;
-            case MANA_TEXT:
-                x = 143;
-                y = -4;
-                break;
-            case HEALTH_UPDATES:
-                x = 41;
-                y = -13;
-                break;
-            case ITEM_PICKUP_LOG:
-                x = 86;
-                y = 17;
-                break;
-            case MAGMA_BOSS_TIMER:
-                x = -18;
-                y = 13;
-                break;
-            case DARK_AUCTION_TIMER:
-                x = -18;
-                y = 29;
-                break;
+        CoordsPair coords = feature.getDefaultCoordinates();
+        if (coords != null) {
+            coordinates.put(feature, coords);
         }
-        coordinates.put(feature, new CoordsPair(x, y));
+    }
+
+    private void putDefaultBarSizes() {
+        for (Feature feature : Feature.getGuiFeatures()) {
+            CoordsPair size = feature.getDefaultBarSize();
+            if (size != null) {
+                barSizes.put(feature, size);
+            }
+        }
     }
 
     public void loadLanguageFile(boolean pullOnline) {
@@ -436,13 +399,23 @@ public class ConfigValues {
             settingsConfig.add("disabledFeatures", jsonArray);
 
             jsonArray = new JsonArray();
-            for (int slot : lockedSlots) {
+            for (int slot : legacyLockedSlots) {
                 jsonArray.add(new GsonBuilder().create().toJsonTree(slot));
             }
             settingsConfig.add("lockedSlots", jsonArray);
 
+            JsonObject profileSlotsObject = new JsonObject();
+            for (Map.Entry<String, Set<Integer>> entry : profileLockedSlots.entrySet()) {
+                JsonArray lockedSlots = new JsonArray();
+                for (int slot : entry.getValue()) {
+                    lockedSlots.add(new GsonBuilder().create().toJsonTree(slot));
+                }
+                profileSlotsObject.add(entry.getKey(), lockedSlots);
+            }
+            settingsConfig.add("profileLockedSlots", profileSlotsObject);
+
             JsonObject anchorObject = new JsonObject();
-            for (Feature feature : GUI_FEATURES) {
+            for (Feature feature : Feature.getGuiFeatures()) {
                 anchorObject.addProperty(String.valueOf(feature.getId()), getAnchorPoint(feature).getId());
             }
             settingsConfig.add("anchorPoints", anchorObject);
@@ -481,24 +454,6 @@ public class ConfigValues {
             settingsConfig.add("barSizes", barSizesObject);
 
             settingsConfig.addProperty("warningSeconds", warningSeconds);
-
-//            for (Feature feature : GUI_FEATURES) {
-//                String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
-//                settingsConfig.addProperty(property+"X", getRelativeCoords(feature).getX());
-//                settingsConfig.addProperty(property+"Y", getRelativeCoords(feature).getY());
-//            }
-
-//            for (Feature feature : new Feature[] {Feature.HEALTH_BAR, Feature.MANA_BAR}) {
-//                if (barSizes.containsKey(feature)) {
-//                    String property = Introspector.decapitalize(WordUtils.capitalizeFully(feature.toString().replace("_", " "))).replace(" ", "");
-//                    int width = getSizes(feature).getX();
-//                    int height = getSizes(feature).getY();
-//                    if (width != 7 || height > 1) {
-//                        settingsConfig.addProperty(property + "W", width);
-//                        settingsConfig.addProperty(property + "H", height);
-//                    }
-//                }
-//            }
 
             settingsConfig.addProperty("textStyle", textStyle.ordinal());
             settingsConfig.addProperty("language", language.getPath());
@@ -556,7 +511,8 @@ public class ConfigValues {
     }
 
     public ConfigColor getColor(Feature feature) {
-        return featureColors.getOrDefault(feature, ConfigColor.RED);
+        ConfigColor defaultColor = feature.getDefaultColor();
+        return featureColors.getOrDefault(feature, defaultColor != null ? defaultColor : ConfigColor.RED);
     }
 
     public int getWarningSeconds() {
@@ -578,7 +534,8 @@ public class ConfigValues {
     }
 
     public CoordsPair getSizes(Feature feature) {
-        return barSizes.getOrDefault(feature, new CoordsPair(7,1));
+        CoordsPair defaultSize = feature.getDefaultBarSize();
+        return barSizes.getOrDefault(feature, defaultSize != null ? defaultSize : new CoordsPair(7,1));
     }
 
     public void setSizeX(Feature feature, int x) {
@@ -622,7 +579,7 @@ public class ConfigValues {
         int maxX = sr.getScaledWidth();
         int maxY = sr.getScaledHeight();
         double shortestDistance = -1;
-        EnumUtils.AnchorPoint closestAnchorPoint = EnumUtils.AnchorPoint.HEALTH_BAR; // default
+        EnumUtils.AnchorPoint closestAnchorPoint = EnumUtils.AnchorPoint.BOTTOM_MIDDLE; // default
         for (EnumUtils.AnchorPoint point : EnumUtils.AnchorPoint.values()) {
             double distance = Point2D.distance(x1, y1, point.getX(maxX), point.getY(maxY));
             if (shortestDistance == -1 || distance < shortestDistance) {
@@ -638,17 +595,6 @@ public class ConfigValues {
         setCoords(feature, x, y);
     }
 
-//    public void setNextAnchorPoint(Feature feature) {
-//        EnumUtils.AnchorPoint nextPoint = getAnchorPoint(feature).getNextType();
-//        int targetX = getActualX(feature);
-//        int targetY = getActualY(feature);
-//        ScaledResolution sr = new ScaledResolution(Minecraft.getMinecraft());
-//        int x = targetX-nextPoint.getX(sr.getScaledWidth());
-//        int y = targetY-nextPoint.getY(sr.getScaledHeight());
-//        anchorPoints.put(feature, nextPoint);
-//        setCoords(feature, x, y);
-//    }
-
     public EnumUtils.BackpackStyle getBackpackStyle() {
         return backpackStyle;
     }
@@ -658,7 +604,9 @@ public class ConfigValues {
     }
 
     public EnumUtils.AnchorPoint getAnchorPoint(Feature feature) {
-        return anchorPoints.getOrDefault(feature, EnumUtils.AnchorPoint.HEALTH_BAR);
+        EnumUtils.AnchorPoint defaultPoint = feature.getAnchorPoint();
+
+        return anchorPoints.getOrDefault(feature, defaultPoint != null ? defaultPoint : EnumUtils.AnchorPoint.BOTTOM_MIDDLE);
     }
 
     JsonObject getLanguageConfig() {
@@ -678,7 +626,12 @@ public class ConfigValues {
     }
 
     public Set<Integer> getLockedSlots() {
-        return lockedSlots;
+        String profile = main.getUtils().getProfileName();
+        if (profile == null) return legacyLockedSlots;
+        if (!profileLockedSlots.containsKey(profile)) {
+            profileLockedSlots.put(profile, new HashSet<>(legacyLockedSlots));
+        }
+        return profileLockedSlots.get(profile);
     }
 
     public void setGuiScale(Feature feature, float scale) {

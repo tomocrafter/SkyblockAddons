@@ -53,7 +53,7 @@
     "lockSlot": "Lås slot",
     "dontResetCursorInventory": "Nulstil ikke markøren mellem lagrene",
     "summoningEyeAlert": "Afkaldende øjenalarm",
-    "makeEnderchestsInEndGreen": "Lav enderchests i slutningen grøn",
+    "makeEnderchestsInEndGreen": "Skift Enderchest farve i End",
     "changeColor": "Skift farve",
     "showInOtherGames": "Vis i andre spil",
     "useVanillaTexture": "Brug vanilla teksturen",
@@ -70,11 +70,17 @@
     "replaceRomanNumeralsWithNumbers": "Udskift romertal på poster",
     "changeBarColorForPotions": "Ændre bar farve for wither og gift",
     "craftingPatterns": "Vælg bygge mønster",
-    "soundIndicatorForFishing": "Sound Indicator for Fishing",
-    "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
-    "disableMinionLocationWarning": "Disable Location Not Perfect Warnings",
-    "jungleAxeCooldown": "Jungle Axe Cooldown",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "soundIndicatorForFishing": "Lydindikator til fiskeri",
+    "avoidBlinkingNightVision": "Deaktiver blink for nattesyn",
+    "disableMinionLocationWarning": "Deaktiver Location Not Perfect advarsler",
+    "jungleAxeCooldown": "Jungle Axe ned brug",
+    "organizeLongEnchantmentLists": "Organiser lange fortryllelses lister",
+    "showItemCooldowns": "Vis genstand ned brug",
+    "speedPercentage": "Hastigheds procent",
+    "collectionDisplay": "Dygtigheds fremskridt visning",
+    "onlyMineOresDeepCaverns": "Kun mine malm i Deep Caverns",
+    "revenantIndicator": "Slayer rustning fremskridts indikator",
+    "specialZealotAlert": "Speciel Zealot alarm"
   },
   "messages": {
     "dropConfirmation": "Slip denne vare igen for at bekræfte!",
@@ -109,10 +115,13 @@
     "slotLocked": "Dette slot er låst!",
     "summoningEyeFound": "Ringer øje!",
     "cancelledStemBreak": "SkyblockAddons har forhindret dig i at bryde denne stilk. Brug din bare hånd, hvis du gerne vil bryde den.",
-    "cancelledCaneBreak": "SkyblockAddons har stoppet dig fra at ødelægge denne blok af sukkerrør. Brug et andet redskab hvis du gerne vil ødelægge den.",
     "cancelledProfileOpening": "SkyblockAddons har forhindret dig i at åbne denne spillers profil, mens du holder en bue.",
     "cancelledDropping": "SkyblockAddons har forhindret dig i at droppe dette sjældne element eller værktøj fra din hotbar.",
     "clickMoreTimes": "Klik / slip dette emne %times% flere gange, hvis du virkelig ønsker at gøre dette.",
-    "featureDisabled": "Funktion deaktiveret"
+    "cancelledDeepCaverns": "En SkyblockAddons funktion har stoppet dig fra at mine denne her blok.",
+    "featureDisabled": "Funktion deaktiveret",
+    "anvilUses": "Ambolt brug: %uses%",
+    "specialZealotFound": "Speciel Zealot!",
+    "blockIncompletePatterns": "Bloker byggelse af ufuldstændige mønstre (anbefalet)"
   }
 }

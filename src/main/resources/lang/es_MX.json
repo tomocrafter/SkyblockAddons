@@ -53,7 +53,7 @@
     "lockSlot": "Bloquear Ranura",
     "dontResetCursorInventory": "Evitar Reinicio del Cursor entre Inventarios",
     "summoningEyeAlert": "Alerta de Summoning Eye",
-    "makeEnderchestsInEndGreen": "Colorear Enderchest de Verde en The End",
+    "makeEnderchestsInEndGreen": "Cambiar el color del Enderchest en el End",
     "changeColor": "Cambiar Color",
     "showInOtherGames": "Mostrar en Otros Juegos",
     "useVanillaTexture": "Usar la Textura Vanilla",
@@ -70,11 +70,17 @@
     "replaceRomanNumeralsWithNumbers": "Reemplazar Números Romanos en Objetos",
     "changeBarColorForPotions": "Cambiar Color de Barra para Wither y Veneno",
     "craftingPatterns": "Elegir Patrones de Crafteo",
-    "soundIndicatorForFishing": "Sound Indicator for Fishing",
-    "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
-    "disableMinionLocationWarning": "Disable Location Not Perfect Warnings",
-    "jungleAxeCooldown": "Jungle Axe Cooldown",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "soundIndicatorForFishing": "Alerta de Sonido al Pescar",
+    "avoidBlinkingNightVision": "Desactivar Efecto de Parpadeo de Visión Nocturna",
+    "disableMinionLocationWarning": "Desactivar Alerta de Colocación Incorrecta",
+    "jungleAxeCooldown": "Tiempo de Espera de Jungle Axe",
+    "organizeLongEnchantmentLists": "Organizar Listas Largas de Encantamientos",
+    "showItemCooldowns": "Mostrar Tiempo de Espera de Objetos",
+    "speedPercentage": "Porcentaje de Velocidad",
+    "collectionDisplay": "Progreso de Hablidades",
+    "onlyMineOresDeepCaverns": "Minar Minerales Sólo en Deep Caverns",
+    "revenantIndicator": "Indicador de Progreso de Slayer Armor",
+    "specialZealotAlert": "Alerta de Zealot Especial"
   },
   "messages": {
     "dropConfirmation": "Arroja este objeto otra vez para confirmar!",
@@ -109,10 +115,13 @@
     "slotLocked": "Esta ranura está bloqueada!",
     "summoningEyeFound": "Summoning Eye!",
     "cancelledStemBreak": "SkyblockAddons ha impedido que rompas este tallo. Usa sólo tus manos si en realidad quieres romperlo.",
-    "cancelledCaneBreak": "SkyblockAddons te ha impedido romper este bloque de caña de azúcar. Usa otra herramienta si en realidad quieres romperlo.",
     "cancelledProfileOpening": "SkyblockAddons ha evitado que abras el perfil de este jugador con tu arco en la mano.",
     "cancelledDropping": "SkyblockAddons ha evitado que arrojes este objeto o herramienta rara.",
     "clickMoreTimes": "Haz clic/arroja el objeto %times% veces más si en realidad quieres hacerlo.",
-    "featureDisabled": "Característica Desactivada"
+    "cancelledDeepCaverns": "Una característica especial de SkyblockAddons ha impedido que mines ese bloque aquí.",
+    "featureDisabled": "Característica Desactivada",
+    "anvilUses": "Usos en Anvil/Yunque: %uses%",
+    "specialZealotFound": "Zealot Especial!",
+    "blockIncompletePatterns": "Bloquear el crafteo de patrones incompletos (recomendado)"
   }
 }

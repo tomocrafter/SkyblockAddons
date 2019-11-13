@@ -2,7 +2,7 @@
   "language": "OwO wanguage uwu",
   "settings": {
     "tab": {
-      "features": "Fwetwues",
+      "features": "Fwetuwures",
       "fixes": "Fwxes",
       "guiFeatures": "GUI Fwetwues",
       "generalSettings": "Genewal Settings"
@@ -53,7 +53,7 @@
     "lockSlot": "Lock Swot",
     "dontResetCursorInventory": "Dow't Weset Cuwsow Bewtween Inventowies",
     "summoningEyeAlert": "Summoning Eye Awewt",
-    "makeEnderchestsInEndGreen": "Make Endewchests In The End Gween",
+    "makeEnderchestsInEndGreen": "Change Enderchest Color in the End",
     "changeColor": "Chwange Cwlor",
     "showInOtherGames": "Showo in Owther Gwames",
     "useVanillaTexture": "Uwse the Vaniwwa Twextwre",
@@ -69,12 +69,18 @@
     "avoidBreakingBottomSugarCane": "Awoid Bweaking Bwottom Sugar Cwane",
     "replaceRomanNumeralsWithNumbers": "Wepwace Roman Numuwuals on Itwems",
     "changeBarColorForPotions": "Change Baw Cowow Fow Withew & Poison",
-    "craftingPatterns": "OwO Pwease, choose a Crafting Pattern",
+    "craftingPatterns": "OwO Pwease, choose a Cwafting Pattern",
     "soundIndicatorForFishing": "Swound Indicator fwor Fwishing UwU",
     "avoidBlinkingNightVision": "Avoid Bwinking Night Vision Potion",
     "disableMinionLocationWarning": "Disabwe Wocation Not Pewfect Wawnings",
     "jungleAxeCooldown": "Jungwe Axe Coowdown",
-    "organizeLongEnchantmentLists": "Owganize Wong Enchantment Wists"
+    "organizeLongEnchantmentLists": "Owganize Wong Enchantment Wists",
+    "showItemCooldowns": "Show Item Coowdowns",
+    "speedPercentage": "Spweed Pwocentage",
+    "collectionDisplay": "Skwill Prowogess Dispway",
+    "onlyMineOresDeepCaverns": "OwOnly Mwine Owores in twhe deep Cavwerns",
+    "revenantIndicator": "Swawwer Awmowo Pwogwess Indicator ",
+    "specialZealotAlert": "Spwecial Wealots Awert"
   },
   "messages": {
     "dropConfirmation": "Dwop thwis itwem agwain to confiwm!",
@@ -109,10 +115,13 @@
     "slotLocked": "Thwis swot is secwure!",
     "summoningEyeFound": "Summonuwuing Eye!",
     "cancelledStemBreak": "SkybwockAddons has stwopped uwu fwom bweaking this stwem. Use uwur bear hands if uwu'd wike to bweak it owo.",
-    "cancelledCaneBreak": "SkybwockAwwons has stwopped you from bweaking dis bwock of sugrawr cane. Use another twool if uwu'd actwually like to bweak it.",
-    "cancelledProfileOpening": "SkybwockAwwons has stwopped uwu from opwening this plawer's pwofile whowo holdowoing a bowo.",
+    "cancelledProfileOpening": "SkybwockAwwons has stwopped A1m from opwening this plawer's pwofile whowo holdowoing a bowo.",
     "cancelledDropping": "SkybwockAwwons has owoed you from dwopping dis rawr itwem or twool from your hawtbar.",
     "clickMoreTimes": "Cwick/dwop this item %times% mwore twimes if you weally want to do whis.",
-    "featureDisabled": "Fweature Diswabled"
+    "cancelledDeepCaverns": "A SkwyBwlockAddowons fweature hwas stowopped ywou from mining thwis blowock hwere.",
+    "featureDisabled": "Fweature Diswabled",
+    "anvilUses": "Anviw Uses: %uses%",
+    "specialZealotFound": "Spwecial Wealots OwO!",
+    "blockIncompletePatterns": "Bwock cwafting incompwete pattewns (wecommended)"
   }
 }

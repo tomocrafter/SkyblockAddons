@@ -78,6 +78,7 @@ public class ButtonNormal extends ButtonFeature {
 
             int textX = xPosition+width/2;
             int textY = yPosition;
+            if (feature == Feature.GENERAL_SETTINGS) textY -= 5;
 
             GlStateManager.pushMatrix();
             GlStateManager.scale(scale, scale, 1);
@@ -100,6 +101,9 @@ public class ButtonNormal extends ButtonFeature {
                 GlStateManager.color(1,1,1,1F);
                 try {
                     mc.getTextureManager().bindTexture(new ResourceLocation("skyblockaddons", "flags/"+main.getConfigValues().getLanguage().getFlagPath()+".png"));
+                    if (main.getUtils().isHalloween()) {
+                        mc.getTextureManager().bindTexture(new ResourceLocation("skyblockaddons", "flags/halloween.png"));
+                    }
                     drawModalRectWithCustomSizedTexture(xPosition + width / 2 - 20, yPosition + 20, 0, 0, 38, 30, 38, 30);
                 } catch (Exception ex) {
                     ex.printStackTrace();
@@ -129,11 +133,14 @@ public class ButtonNormal extends ButtonFeature {
 
     @Override
     public void playPressSound(SoundHandler soundHandlerIn) {
+        if (feature == Feature.LANGUAGE || feature == Feature.EDIT_LOCATIONS || feature == Feature.GENERAL_SETTINGS) {
+            super.playPressSound(soundHandlerIn);
+        }
     }
 
     @Override
     public boolean mousePressed(Minecraft mc, int mouseX, int mouseY) {
-        if (feature == Feature.LANGUAGE || feature == Feature.EDIT_LOCATIONS) {
+        if (feature == Feature.LANGUAGE || feature == Feature.EDIT_LOCATIONS || feature == Feature.GENERAL_SETTINGS) {
             return super.mousePressed(mc, mouseX, mouseY);
         }
         return false;

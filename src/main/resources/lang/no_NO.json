@@ -53,7 +53,7 @@
     "lockSlot": "Lås Slot",
     "dontResetCursorInventory": "Ikke nullstill musen mellom inventories",
     "summoningEyeAlert": "Innkallende øye varsling",
-    "makeEnderchestsInEndGreen": "Gjør enderkister i end grønne",
+    "makeEnderchestsInEndGreen": "Endre farge på Enderkiste i the End",
     "changeColor": "Endre farge",
     "showInOtherGames": "Vis i andre spill",
     "useVanillaTexture": "Bruk Vanilla teksturen",
@@ -70,11 +70,17 @@
     "replaceRomanNumeralsWithNumbers": "Bytt Ut Romertall på Gjenstander",
     "changeBarColorForPotions": "Bytt ut bar farge for visne og gift effekter",
     "craftingPatterns": "Velg utformingsmønstre",
-    "soundIndicatorForFishing": "Sound Indicator for Fishing",
-    "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
-    "disableMinionLocationWarning": "Disable Location Not Perfect Warnings",
-    "jungleAxeCooldown": "Jungle Axe Cooldown",
-    "organizeLongEnchantmentLists": "Organize Long Enchantment Lists"
+    "soundIndicatorForFishing": "Lyd Indikator for Fisking",
+    "avoidBlinkingNightVision": "Deaktivere Nattsyn Trylledrikk Blinking",
+    "disableMinionLocationWarning": "Deaktivere Plassering Ikke Perfekt Advarsler",
+    "jungleAxeCooldown": "Jungel Øks Pause",
+    "organizeLongEnchantmentLists": "Organiser Lang Fortryllelse Lister",
+    "showItemCooldowns": "Vis Ting Pause",
+    "speedPercentage": "Farts Prosent",
+    "collectionDisplay": "Ferdighetsutvikling Visning",
+    "onlyMineOresDeepCaverns": "Bare Grave Årer i de Dype Hulene",
+    "revenantIndicator": "Slayer Armour Fremgangs Indikator",
+    "specialZealotAlert": "Spesiell Zealot Alarm"
   },
   "messages": {
     "dropConfirmation": "Slipp denne gjenstanden igjen for å bekrefte!",
@@ -109,10 +115,13 @@
     "slotLocked": "Denne ruten er låst!",
     "summoningEyeFound": "Summoning Eye!",
     "cancelledStemBreak": "SkyblockAddons har stoppet deg fra å ødelegge denne stilken. Bruk hånden din hvis du vil ødelegge den.",
-    "cancelledCaneBreak": "SkyblockAddons har stoppet deg fra å ødelegge dette sukkerrøret. Bruk et annet redskap hvis du vil ødelegge den.",
     "cancelledProfileOpening": "SkyblockAddons har stoppet deg fra å åpne denne spillerens profil siden du holder en bue.",
     "cancelledDropping": "SkyblockAddons har stoppet deg fra å slippe denne sjeldne gjenstanden/redskap fra din hotbar.",
     "clickMoreTimes": "Klikk/slipp denne gjenstanden %times% flere ganger hvis du virkelig vil gjøre dette.",
-    "featureDisabled": "Funksjon Deaktivert"
+    "cancelledDeepCaverns": "En SkyblockAddons egenskap har stoppet deg fra å ødelegge denne blokken her.",
+    "featureDisabled": "Funksjon Deaktivert",
+    "anvilUses": "Ambolt Bruk: %uses%",
+    "specialZealotFound": "Spesiell Zealot!",
+    "blockIncompletePatterns": "Blokk bygging med uferdig mønster (anbefalt)"
   }
 }

@@ -12,6 +12,8 @@ import net.minecraft.client.entity.EntityOtherPlayerMP;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.event.ClickEvent;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraft.nbt.NBTTagCompound;
@@ -29,15 +31,14 @@ import net.minecraftforge.fml.relauncher.FileListHelper;
 import net.minecraftforge.fml.relauncher.ModListHelper;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.text.WordUtils;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
+import java.net.*;
 import java.util.List;
 import java.util.*;
 import java.util.jar.JarFile;
@@ -48,7 +49,16 @@ import java.util.zip.ZipEntry;
 
 public class Utils {
 
-    private final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
+    /**
+     * Turn true to block the next window click in {@link codes.biscuit.skyblockaddons.mixins.MixinPlayerControllerMP#onWindowClick(int, int, int, int, EntityPlayer, CallbackInfoReturnable)}
+     */
+    // I know this is messy af, but frustration led me to take this dark path
+    public static boolean blockNextClick = false;
+
+    private boolean usingOldSkyBlockTexture = false;
+
+    private final Pattern STRIP_COLOR_PATTERN = Pattern.compile("(?i)§[0-9A-FK-OR]");
+    private final Pattern ITEM_ABILITY_PATTERN = Pattern.compile("§5§o§6Item Ability: ([A-Za-z ]+) §e§l[A-Z ]+");
 
     private static final List<String> ORDERED_ENCHANTMENTS = Collections.unmodifiableList(Arrays.asList(
             "smite","bane of arthropods","knockback","fire aspect","venomous", // Sword Bad
@@ -67,6 +77,7 @@ public class Utils {
     private Backpack backpackToRender = null;
     private static boolean onSkyblock = false;
     private EnumUtils.Location location = null;
+    private String profileName = null;
     private boolean playingSound = false;
     private boolean copyNBT = false;
     private String serverID = "";
@@ -106,7 +117,7 @@ public class Utils {
 
     private static final Pattern SERVER_REGEX = Pattern.compile("([0-9]{2}/[0-9]{2}/[0-9]{2}) (mini[0-9]{1,3}[A-Za-z])");
     // english, chinese simplified
-    private static Set<String> skyblockInAllLanguages = Sets.newHashSet("SKYBLOCK","\u7A7A\u5C9B\u751F\u5B58");
+    private static final Set<String> SKYBLOCK_IN_ALL_LANGUAGES = Sets.newHashSet("SKYBLOCK","\u7A7A\u5C9B\u751F\u5B58");
 
     public void checkGameLocationDate() {
         boolean foundLocation = false;
@@ -117,9 +128,10 @@ public class Utils {
             if (sidebarObjective != null) {
                 String objectiveName = stripColor(sidebarObjective.getDisplayName());
                 onSkyblock = false;
-                for (String skyblock : skyblockInAllLanguages) {
+                for (String skyblock : SKYBLOCK_IN_ALL_LANGUAGES) {
                     if (objectiveName.startsWith(skyblock)) {
                         onSkyblock = true;
+                        break;
                     }
                 }
                 Collection<Score> collection = scoreboard.getSortedScores(sidebarObjective);
@@ -389,10 +401,22 @@ public class Utils {
         return new Color(150, 236, 255, alpha).getRGB();
     }
 
-    public void playSound(String sound, double pitch) {
+    /**
+     * When you use this function, any sound played will bypass the player's
+     * volume setting, so make sure to only use this for like warnings or stuff like that.
+     */
+    public void playLoudSound(String sound, double pitch) {
         playingSound = true;
         Minecraft.getMinecraft().thePlayer.playSound(sound, 1, (float) pitch);
         playingSound = false;
+    }
+
+    /**
+     * This one plays the sound normally. See {@link Utils#playLoudSound(String, double)} for playing
+     * a sound that bypasses the user's volume settings.
+     */
+    public void playSound(String sound, double pitch) {
+        Minecraft.getMinecraft().thePlayer.playSound(sound, 1, (float) pitch);
     }
 
     public boolean enchantReforgeMatches(String text) {
@@ -543,12 +567,13 @@ public class Utils {
     }
 
     public boolean cantDropItem(ItemStack item, EnumUtils.Rarity rarity, boolean hotbar) {
+        if (Items.bow.equals(item.getItem()) && rarity == EnumUtils.Rarity.COMMON) return false; // exclude rare bows lol
+        if (item.hasDisplayName() && item.getDisplayName().contains("Backpack")) return true; // dont drop backpacks ever
         if (hotbar) {
-            return item.getItem().isDamageable() || (rarity != EnumUtils.Rarity.COMMON && rarity != EnumUtils.Rarity.UNCOMMON)
-                    || (item.hasDisplayName() && item.getDisplayName().contains("Backpack"));
+            return item.getItem().isDamageable() || (rarity != EnumUtils.Rarity.COMMON && rarity != EnumUtils.Rarity.UNCOMMON);
         } else {
             return item.getItem().isDamageable() || (rarity != EnumUtils.Rarity.COMMON && rarity != EnumUtils.Rarity.UNCOMMON
-                    && rarity != EnumUtils.Rarity.RARE) || (item.hasDisplayName() && item.getDisplayName().contains("Backpack"));
+                    && rarity != EnumUtils.Rarity.RARE);
         }
     }
 
@@ -629,6 +654,98 @@ public class Utils {
             if (changeMessage) main.getRenderListener().getDownloadInfo().setMessageType(EnumUtils.UpdateMessageType.FAILED);
         }
         return null;
+    }
+
+    public int getNBTInteger(ItemStack item, String... path) {
+        if (item != null && item.hasTagCompound()) {
+            NBTTagCompound tag = item.getTagCompound();
+            for (String tagName : path) {
+                if (path[path.length-1] == tagName) continue;
+                if (tag.hasKey(tagName)) {
+                    tag = tag.getCompoundTag(tagName);
+                } else {
+                    return -1;
+                }
+            }
+            return tag.getInteger(path[path.length-1]);
+        }
+        return -1;
+    }
+
+    public boolean isHalloween() {
+        Calendar calendar = Calendar.getInstance();
+        return calendar.get(Calendar.MONTH) == Calendar.OCTOBER && calendar.get(Calendar.DAY_OF_MONTH) == 31;
+    }
+
+    private String getAbilityName(ItemStack item) {
+        for (String loreLine : item.getTooltip(Minecraft.getMinecraft().thePlayer, false)) {
+            Matcher matcher = ITEM_ABILITY_PATTERN.matcher(loreLine);
+            if (matcher.matches()) {
+                try {
+                    return matcher.group(1);
+                } catch (NumberFormatException ignored) { }
+            }
+        }
+        return null;
+    }
+
+    public void drawString(Minecraft mc, String text, int x, int y, int color) {
+        if (main.getConfigValues().getTextStyle() == EnumUtils.TextStyle.BLACK_SHADOW) {
+            String strippedText = main.getUtils().stripColor(text);
+            mc.fontRendererObj.drawString(strippedText, x + 1, y, 0);
+            mc.fontRendererObj.drawString(strippedText, x - 1, y, 0);
+            mc.fontRendererObj.drawString(strippedText, x, y + 1, 0);
+            mc.fontRendererObj.drawString(strippedText, x, y - 1, 0);
+            mc.fontRendererObj.drawString(text, x, y, color);
+        } else {
+            mc.ingameGUI.drawString(mc.fontRendererObj, text, x, y, color);
+        }
+    }
+
+    public boolean isPickaxe(Item item) {
+        return Items.wooden_pickaxe.equals(item) || Items.stone_pickaxe.equals(item) || Items.golden_pickaxe.equals(item) || Items.iron_pickaxe.equals(item) || Items.diamond_pickaxe.equals(item);
+    }
+
+    private boolean lookedOnline = false;
+    private URI featuredLink = null;
+
+    public URI getFeaturedURL() {
+        if (featuredLink != null) return featuredLink;
+
+        BufferedReader reader;
+        reader = new BufferedReader(new InputStreamReader(getClass().getClassLoader().getResourceAsStream("assets/skyblockaddons/featuredlink.txt")));
+        try {
+            String currentLine;
+            while ((currentLine = reader.readLine()) != null) {
+                featuredLink = new URI(currentLine);
+            }
+            reader.close();
+        } catch (IOException | URISyntaxException ignored) {
+        }
+
+        return featuredLink;
+    }
+
+    public void getFeaturedURLOnline() {
+        if (!lookedOnline) {
+            lookedOnline = true;
+            new Thread(() -> {
+                try {
+                    URL url = new URL("https://raw.githubusercontent.com/BiscuitDevelopment/SkyblockAddons/master/src/main/resources/assets/skyblockaddons/featuredlink.txt");
+                    URLConnection connection = url.openConnection(); // try looking online
+                    connection.setReadTimeout(5000);
+                    connection.addRequestProperty("User-Agent", "SkyblockAddons");
+                    connection.setDoOutput(true);
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                    String currentLine;
+                    while ((currentLine = reader.readLine()) != null) {
+                        featuredLink = new URI(currentLine);
+                    }
+                    reader.close();
+                } catch (IOException | URISyntaxException ignored) {
+                }
+            }).start();
+        }
     }
 
     public boolean isDevEnviroment() {
@@ -726,4 +843,19 @@ public class Utils {
         enchantments.addAll(orderedEnchants.values());
     }
 
+    public String getProfileName() {
+        return profileName;
+    }
+
+    public void setProfileName(String profileName) {
+        this.profileName = profileName;
+    }
+
+    public boolean isUsingOldSkyBlockTexture() {
+        return usingOldSkyBlockTexture;
+    }
+
+    public void setUsingOldSkyBlockTexture(boolean usingOldSkyBlockTexture) {
+        this.usingOldSkyBlockTexture = usingOldSkyBlockTexture;
+    }
 }

@@ -53,7 +53,7 @@
     "lockSlot": "Blocca Slot",
     "dontResetCursorInventory": "Non resettare il cursore tra gli inventari",
     "summoningEyeAlert": "Avviso di acquisizione di un Occhio dell'evocazione",
-    "makeEnderchestsInEndGreen": "Rendi le casse nell'End verdi",
+    "makeEnderchestsInEndGreen": "Cambia il colore dell’enderchest nell’End",
     "changeColor": "Cambia colore",
     "showInOtherGames": "Mostra in Altri Giochi",
     "useVanillaTexture": "Usa la Texture Vanilla",
@@ -73,8 +73,14 @@
     "soundIndicatorForFishing": "Indicatore audio per la pesca",
     "avoidBlinkingNightVision": "Evita l'intermittenza della pozione di visione notturna",
     "disableMinionLocationWarning": "Disattiva gli avvisi di posizione non perfetta",
-    "jungleAxeCooldown": "Ricarica della Jungle Axe",
-    "organizeLongEnchantmentLists": "Organizza gli elenchi di incantesimi lunghi"
+    "jungleAxeCooldown": "Tempo di ricarica della Jungle Axe",
+    "organizeLongEnchantmentLists": "Organizza gli elenchi di incantesimi lunghi",
+    "showItemCooldowns": "Mostra i tempi di ricarica degli oggetti",
+    "speedPercentage": "Percentuale di Velocità",
+    "collectionDisplay": "Visualizzazione del progresso dell’abilità",
+    "onlyMineOresDeepCaverns": "Estrai minerali solo nelle Deep Caverns",
+    "revenantIndicator": "Indicatore di progresso dell’Armatura Slayer",
+    "specialZealotAlert": "Avviso di Zealot Speciale"
   },
   "messages": {
     "dropConfirmation": "Getta questo oggetto nuovamente per confermare!",
@@ -109,10 +115,13 @@
     "slotLocked": "Questo slot è bloccato!",
     "summoningEyeFound": "Occhio dell'evocazione!",
     "cancelledStemBreak": "SkyblockAddons ti ha impedito di rompere questo stelo. Usa la tua mano se lo vuoi rompere.",
-    "cancelledCaneBreak": "SkyblockAddons ti ha impedito di rompere questo pezzo di canna da zucchero. Usa un altro strumento se lo vuoi rompere.",
     "cancelledProfileOpening": "SkyblockAddons ti ha impedito di aprire il profilo di questo giocatore mentre avevi l’arco in mano.",
     "cancelledDropping": "SkyblockAddons ti ha impedito di gettare questo oggetto o strumento raro dalla tua hotbar.",
     "clickMoreTimes": "Clicca/getta questo oggetto altre %times% volte se vuoi davvero farlo.",
-    "featureDisabled": "Funzione disabilitata"
+    "cancelledDeepCaverns": "Una funzione di SkyBlockAddons ti ha impedito di estrarre questo blocco.",
+    "featureDisabled": "Funzione disabilitata",
+    "anvilUses": "Utilizzi dell’incudine: %uses%",
+    "specialZealotFound": "Zealot Speciale!",
+    "blockIncompletePatterns": "Blocco degli schemi di fabbricazione incompleti (consigliato)"
   }
 }

@@ -17,6 +17,7 @@ import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.lwjgl.input.Keyboard;
 
+import java.lang.reflect.Field;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,7 +26,7 @@ public class SkyblockAddons {
 
     static final String MOD_ID = "skyblockaddons";
     static final String MOD_NAME = "SkyblockAddons";
-    public static final String VERSION = "1.3.4";
+    public static final String VERSION = "1.4.2";
 
     private static SkyblockAddons instance; // for Mixins cause they don't have a constructor
     private ConfigValues configValues;
@@ -36,9 +37,9 @@ public class SkyblockAddons {
     private Scheduler scheduler = new Scheduler(this);
     private boolean usingLabymod = false;
     private boolean usingOofModv1 = false;
-    private int openSettingsKeyIndex = -1;
-    private int openEditLocationsKeyIndex = -1;
-    private int lockSlotKeyIndex = -1;
+    private KeyBinding openSettingsKeyBind;
+    private KeyBinding editGUIKeyBind;
+    private KeyBinding lockSlotKeyBind;
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent e) {
@@ -52,13 +53,12 @@ public class SkyblockAddons {
         MinecraftForge.EVENT_BUS.register(scheduler);
         ClientCommandHandler.instance.registerCommand(new SkyblockAddonsCommand(this));
 
-        ClientRegistry.registerKeyBinding(new KeyBinding("Open Settings", Keyboard.KEY_NONE, MOD_NAME));
-        ClientRegistry.registerKeyBinding(new KeyBinding("Edit GUI Locations", Keyboard.KEY_NONE, MOD_NAME));
-        ClientRegistry.registerKeyBinding(new KeyBinding("Lock Slot", Keyboard.KEY_L, MOD_NAME));
-        int keyBindings = Minecraft.getMinecraft().gameSettings.keyBindings.length;
-        openSettingsKeyIndex = keyBindings - 3;
-        openEditLocationsKeyIndex = keyBindings - 2;
-        lockSlotKeyIndex = keyBindings - 1;
+        openSettingsKeyBind = new KeyBinding("key.skyblockaddons.open_settings", Keyboard.KEY_NONE, MOD_NAME);
+        editGUIKeyBind = new KeyBinding("key.skyblockaddons.edit_gui", Keyboard.KEY_NONE, MOD_NAME);
+        lockSlotKeyBind = new KeyBinding("key.skyblockaddons.lock_slot", Keyboard.KEY_L, MOD_NAME);
+        ClientRegistry.registerKeyBinding(openSettingsKeyBind);
+        ClientRegistry.registerKeyBinding(editGUIKeyBind);
+        ClientRegistry.registerKeyBinding(lockSlotKeyBind);
     }
 
     @Mod.EventHandler
@@ -75,14 +75,34 @@ public class SkyblockAddons {
             }
         }
         utils.checkDisabledFeatures();
+        utils.getFeaturedURLOnline();
         scheduleMagmaCheck();
+
+        for (Feature feature : Feature.values()) {
+            if (feature.isGuiFeature()) {
+                feature.getSettings().add(EnumUtils.FeatureSetting.GUI_SCALE);
+            }
+            if (feature.isColorFeature()) {
+                feature.getSettings().add(EnumUtils.FeatureSetting.COLOR);
+            }
+        }
+    }
+
+    private void changeKeyBindDescription(KeyBinding bind, String desc) {
+        try {
+            Field field = bind.getClass().getDeclaredField(utils.isDevEnviroment() ? "keyDescription" : "field_74515_c");
+            field.setAccessible(true);
+            field.set(bind, desc);
+        } catch(NoSuchFieldException | IllegalAccessException e) {
+            System.out.println("Could not change key description: " + bind.toString());
+            e.printStackTrace();
+        }
     }
 
     public void loadKeyBindingDescriptions() {
-        KeyBinding[] keys = Minecraft.getMinecraft().gameSettings.keyBindings;
-        keys[openSettingsKeyIndex] =      new KeyBinding(Message.SETTING_SETTINGS.getMessage(),       keys[openSettingsKeyIndex].getKeyCode(),      keys[openSettingsKeyIndex].getKeyCategory());
-        keys[openEditLocationsKeyIndex] = new KeyBinding(Message.SETTING_EDIT_LOCATIONS.getMessage(), keys[openEditLocationsKeyIndex].getKeyCode(), keys[openEditLocationsKeyIndex].getKeyCategory());
-        keys[lockSlotKeyIndex] =          new KeyBinding(Message.SETTING_LOCK_SLOT.getMessage(),      keys[lockSlotKeyIndex].getKeyCode(),          keys[lockSlotKeyIndex].getKeyCategory());
+        changeKeyBindDescription(openSettingsKeyBind, Message.SETTING_SETTINGS.getMessage());
+        changeKeyBindDescription(editGUIKeyBind, Message.SETTING_EDIT_LOCATIONS.getMessage());
+        changeKeyBindDescription(lockSlotKeyBind, Message.SETTING_LOCK_SLOT.getMessage());
     }
 
     private void scheduleMagmaCheck() {
@@ -135,14 +155,14 @@ public class SkyblockAddons {
     }
 
     public KeyBinding getOpenSettingsKey() {
-        return Minecraft.getMinecraft().gameSettings.keyBindings[openSettingsKeyIndex];
+        return openSettingsKeyBind;
     }
 
     public KeyBinding getOpenEditLocationsKey() {
-        return Minecraft.getMinecraft().gameSettings.keyBindings[openEditLocationsKeyIndex];
+        return editGUIKeyBind;
     }
 
     public KeyBinding getLockSlot() {
-        return Minecraft.getMinecraft().gameSettings.keyBindings[lockSlotKeyIndex];
+        return lockSlotKeyBind;
     }
 }

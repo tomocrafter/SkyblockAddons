@@ -50,10 +50,10 @@
     "preventMovementOnDeath": "Verhindere das Laufen nach dem Tot",
     "showItemAnvilUses": "Zeige Ambossnutzungen eines Items",
     "lockSlots": "Slots sperren erlauben",
-    "lockSlot": "Sperre slot",
+    "lockSlot": "Sperre Slot",
     "dontResetCursorInventory": "Mauszeiger zwischen Inventaren nicht zurücksetzen",
     "summoningEyeAlert": "Summoning Eye Alarm",
-    "makeEnderchestsInEndGreen": "Färbe Endertruhen im End grün",
+    "makeEnderchestsInEndGreen": "Ändere die Endertruhenfarbe im End",
     "changeColor": "Farbe ändern",
     "showInOtherGames": "In anderen Spielen anzeigen",
     "useVanillaTexture": "Vanilla Textur benutzen",
@@ -70,11 +70,17 @@
     "replaceRomanNumeralsWithNumbers": "Ersetze Römische Nummern auf Gegenständen",
     "changeBarColorForPotions": "Farbe der Leiste bei Wither und Gift ändern",
     "craftingPatterns": "Wähle Herstellung-Muster",
-    "soundIndicatorForFishing": "Sound Indicator for Fishing",
-    "avoidBlinkingNightVision": "Deaktiviere Nacht Sicht Blinken",
+    "soundIndicatorForFishing": "Ton für Fischen",
+    "avoidBlinkingNightVision": "Deaktiviere Nachtsicht Blinken",
     "disableMinionLocationWarning": "Deaktiviere \"Location not perfect\" Warnung",
-    "jungleAxeCooldown": "Jungle Axe Abklingzeit",
-    "organizeLongEnchantmentLists": "Organisieren von langen Verzauberungslisten"
+    "jungleAxeCooldown": "Dschungelaxt Abklingzeit",
+    "organizeLongEnchantmentLists": "Organisieren von langen Verzauberungslisten",
+    "showItemCooldowns": "Item Abklingzeit anzeigen",
+    "speedPercentage": "Geschwindigkeit in Prozent",
+    "collectionDisplay": "Skillfortschrittsanzeige",
+    "onlyMineOresDeepCaverns": "Nur Erze in Deep Caverns abbauen",
+    "revenantIndicator": "Slayer Rüstung Fortschritt Anzeige",
+    "specialZealotAlert": "Spezieller Zealot Alarm"
   },
   "messages": {
     "dropConfirmation": "Werfe diesen Gegenstand nochmal, um zu bestätigen!",
@@ -109,10 +115,13 @@
     "slotLocked": "Dieser Slot ist gesperrt!",
     "summoningEyeFound": "Summoning Eye!",
     "cancelledStemBreak": "SkyblockAddons hat dich davon abgehalten, diesen Stamm zu zerstören. Nutze deine Hand um ihn trotzdem zu zerstören.",
-    "cancelledCaneBreak": "SkyblockAddons hat das Abbauen von dem Zuckerrohr vermieden. Benutze ein anderes Werkzeug um es abzubauen.",
     "cancelledProfileOpening": "SkyblockAddons hat dich davon abgehalten, das Profil dieses Spielers zu öffnen, während du einen Bogen hältst.",
     "cancelledDropping": "SkyblockAddons hat dich davon abgehalten, dieses seltene Item oder Werkzeug aus deiner Hotbar zu droppen.",
     "clickMoreTimes": "Klicke/droppe dieses Item %times% mal mehr, wenn du das wirklich tun möchtest.",
-    "featureDisabled": "Funktion deaktiviert"
+    "cancelledDeepCaverns": "SkyblockAddons hat dich davon abgehalten diesen Block abbzubauen.",
+    "featureDisabled": "Funktion deaktiviert",
+    "anvilUses": "Ambossnutzungen: %uses%",
+    "specialZealotFound": "Spezieller Zealot!",
+    "blockIncompletePatterns": "Block craften, unvollständige Muster (empfohlen)"
   }
 }

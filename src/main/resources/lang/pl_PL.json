@@ -21,7 +21,7 @@
     "hideDurability": "Wyłącz Pasek Wytrzymałości Narzędzi",
     "showEnchantmentsReforges": "Zaklęcia oraz Reforge",
     "minionStopWarning": "Ostrzeżenie o Przerwaniu Pracy Miniona",
-    "hideAuctionHousePlayers": "Ukryj graczy blisko ważnych NPC",
+    "hideAuctionHousePlayers": "Ukryj graczy blisko ważnych NPC-tów",
     "backpackStyle": "Styl Plecaka: %style%",
     "backpackStyles": {
       "regular": "Zwykłe",
@@ -53,7 +53,7 @@
     "lockSlot": "Zablokuj slot",
     "dontResetCursorInventory": "Nie resetuj kursora pomiędzy ekwipunkami",
     "summoningEyeAlert": "Alarm o oku przywołującym",
-    "makeEnderchestsInEndGreen": "Uczyń Skrzynie Endu w Endzie zielone",
+    "makeEnderchestsInEndGreen": "Zmień kolor Skrzyni Kresu w Endzie",
     "changeColor": "Zmień kolor",
     "showInOtherGames": "Pokaż w innych grach",
     "useVanillaTexture": "Użyj zwyczajnych tekstur",
@@ -71,10 +71,16 @@
     "changeBarColorForPotions": "Zmień kolor paska dla funkcji Wither & Mikstury",
     "craftingPatterns": "Wybierz wzór wytwarzania",
     "soundIndicatorForFishing": "Powiadomienia dźwiękowe podczas łowienia",
-    "avoidBlinkingNightVision": "Disable Night Vision Potion Blinking",
+    "avoidBlinkingNightVision": "Wyłącz miganie mikstury widzenia w ciemności",
     "disableMinionLocationWarning": "Wyłącz ostrzeżenia \"Location Not Perfect\"",
     "jungleAxeCooldown": "Czas odnowienia Jungle Axe",
-    "organizeLongEnchantmentLists": "Uporządkuj długie listy enchantów"
+    "organizeLongEnchantmentLists": "Uporządkuj długie listy enchantów",
+    "showItemCooldowns": "Pokazuj colldown itemów",
+    "speedPercentage": "Procent szybkości",
+    "collectionDisplay": "Skill Progress Display",
+    "onlyMineOresDeepCaverns": "Rudy kop tylko w Deep Caverns",
+    "revenantIndicator": "Slayer Armor Progress Indicator",
+    "specialZealotAlert": "Alarmuj o Specjlanym Zealocie"
   },
   "messages": {
     "dropConfirmation": "Wyrzuć ten przedmiot ponownie, aby potwierdzić!",
@@ -109,10 +115,13 @@
     "slotLocked": "Ten slot jest zablokowany!",
     "summoningEyeFound": "Oko przywołujące!",
     "cancelledStemBreak": "SkyblockAddons zatrzyman cię przed zniszczeniem tej łodygi. Użyj pustej ręki, jeśli chcesz ją zniszczyć.",
-    "cancelledCaneBreak": "SkyblockAddons powstrzymał cię przed zniszczeniem tego bloku trzciny cukrowej. Użyj innego narzędzia, jeśli chcesz go zniszczyć.",
     "cancelledProfileOpening": "SkyblockAddons powstrzymał otwieranie profilu tej osoby podczas trzymania łuku.",
     "cancelledDropping": "SkyblockAddons anulował upuszczenie tego rzadkiego przedmiotu lub narzędzia z twojego paska narzędzi.",
     "clickMoreTimes": "Naciśnij/upuść ten przedmiot %times% razy więcej, jeśli naprawdę chcesz to zrobić.",
-    "featureDisabled": "Funkcja wyłączona"
+    "cancelledDeepCaverns": "Funkcja Skyblock Addons powstrzymała cię od kopania tego bloku.",
+    "featureDisabled": "Funkcja wyłączona",
+    "anvilUses": "Użycia kowadła: %uses%",
+    "specialZealotFound": "Specjalny Zealot!",
+    "blockIncompletePatterns": "Block crafting incomplete patterns (recommended)"
   }
 }

@@ -2,11 +2,17 @@ package codes.biscuit.skyblockaddons.utils;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import net.minecraft.entity.Entity;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.Vec3;
 import org.apache.commons.lang3.text.WordUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Set;
@@ -22,7 +28,7 @@ public class EnumUtils {
         TOP_RIGHT(1, ANCHOR_POINT_TOP_RIGHT),
         BOTTOM_LEFT(2, ANCHOR_POINT_BOTTOM_LEFT),
         BOTTOM_RIGHT(3, ANCHOR_POINT_BOTTOM_RIGHT),
-        HEALTH_BAR(4, ANCHOR_POINT_HEALTH_BAR);
+        BOTTOM_MIDDLE(4, ANCHOR_POINT_HEALTH_BAR);
 
         private Message message;
         private int id;
@@ -55,8 +61,8 @@ public class EnumUtils {
                 case TOP_RIGHT: case BOTTOM_RIGHT:
                     x = maxX;
                     break;
-                case HEALTH_BAR:
-                    x = maxX / 2 - 91;
+                case BOTTOM_MIDDLE:
+                    x = maxX / 2;// - 91;
                     break;
                 default: // or case TOP_LEFT: case BOTTOM_LEFT:
                     x = 0;
@@ -68,12 +74,12 @@ public class EnumUtils {
         public int getY(int maxY) {
             int y;
             switch (this) {
-                case BOTTOM_LEFT: case BOTTOM_RIGHT:
+                case BOTTOM_LEFT: case BOTTOM_RIGHT: case BOTTOM_MIDDLE:
                     y = maxY;
                     break;
-                case HEALTH_BAR:
-                    y = maxY - 39;
-                    break;
+//                case BOTTOM_MIDDLE:
+//                    y = maxY - 39;
+//                    break;
                 default: // or case TOP_LEFT: case TOP_RIGHT:
                     y = 0;
 
@@ -97,14 +103,48 @@ public class EnumUtils {
     }
 
     public enum InventoryType {
-        ENCHANTMENT_TABLE(INVENTORY_TYPE_ENCHANTS),
-        REFORGE_ANVIL(INVENTORY_TYPE_REFORGES),
-        CRAFTING_TABLE(INVENTORY_TYPE_CRAFTING);
+        ENCHANTMENT_TABLE(INVENTORY_TYPE_ENCHANTS, "Enchant Item"),
+        REFORGE_ANVIL(INVENTORY_TYPE_REFORGES, "Reforge Item"),
+        CRAFTING_TABLE(INVENTORY_TYPE_CRAFTING, CraftingPattern.CRAFTING_TABLE_DISPLAYNAME);
 
-        private Message message;
+        private static InventoryType currentInventoryType;
 
-        InventoryType(Message message) {
+        /**
+         * Resets the current inventory type
+         */
+        public static void resetCurrentInventoryType() {
+            currentInventoryType = null;
+        }
+
+        /**
+         * @return Current inventory type. Can be null
+         */
+        public static InventoryType getCurrentInventoryType() {
+            return currentInventoryType;
+        }
+
+        /**
+         * Get the inventory type based on an inventory name.
+         * Stores the found type to access later with {@link #getCurrentInventoryType()}
+         *
+         * @param inventoryName Unformatted inventory name
+         * @return Inventory type for that name or null
+         */
+        public static InventoryType getCurrentInventoryType(String inventoryName) {
+            for (InventoryType inventoryType : values()) {
+                if(inventoryType.inventoryName.equals(inventoryName)) {
+                    currentInventoryType = inventoryType;
+                    return inventoryType;
+                }
+            }
+            return null;
+        }
+
+        private final Message message;
+        private final String inventoryName;
+        InventoryType(Message message, String inventoryName) {
             this.message = message;
+            this.inventoryName = inventoryName;
         }
 
         public String getMessage() {
@@ -185,9 +225,9 @@ public class EnumUtils {
         JUNGLE_ISLAND("Jungle Island"),
         SAVANNA_WOODLAND("Savanna Woodland"),
         DARK_THICKET("Dark Thicket"),
-        // Gold Mine
+
         GOLD_MINE("Gold Mine"),
-        // Deep Caverns
+
         DEEP_CAVERNS("Deep Caverns"),
         GUNPOWDER_MINES("Gunpowder Mines"),
         LAPIS_QUARRY("Lapis Quarry"),
@@ -195,15 +235,14 @@ public class EnumUtils {
         SLIMEHILL("Slimehill"),
         DIAMOND_RESERVE("Diamond Reserve"),
         OBSIDIAN_SANCTUARY("Obsidian Sanctuary"),
-        // The Barn
         THE_BARN("The Barn"),
-        // Mushroom Desert
+
         MUSHROOM_DESERT("Mushroom Desert"),
-        //Spider Den
+
         SPIDERS_DEN("Spider's Den"),
-        // Blazing fortress
+
         BLAZING_FORTRESS("Blazing Fortress"),
-        // End
+
         THE_END("The End"),
         DRAGONS_NEST("Dragon's Nest");
 
@@ -284,7 +323,6 @@ public class EnumUtils {
         MADDOX_THE_SLAYER(-87,66,-70, false, Location.VILLAGE, Location.TAVERN),
         SIRIUS(91.5,75,176.5, false, Location.WILDERNESS);
 
-        private final int hideRadius = 4;
         private final AxisAlignedBB hideArea;
         private double x;
         private double y;
@@ -297,17 +335,18 @@ public class EnumUtils {
             this.y = y;
             this.z = z;
             this.isMerchant = isMerchant;
+            int hideRadius = 4;
             this.hideArea = new AxisAlignedBB(x - hideRadius, y - hideRadius, z - hideRadius, x + hideRadius, y + hideRadius, z + hideRadius);
             this.locations = EnumSet.copyOf(Arrays.asList(locations));
         }
 
         public boolean isAtLocation(Location location) {
-            return this.locations.contains(location);
+            return locations.contains(location);
         }
 
         public boolean isNearEntity(Entity entity) {
             Utils utils = SkyblockAddons.getInstance().getUtils();
-            if (this.locations.contains(utils.getLocation())) {
+            if (isAtLocation(utils.getLocation())) {
                 double x = entity.posX;
                 double y = entity.posY;
                 double z = entity.posZ;
@@ -338,8 +377,18 @@ public class EnumUtils {
 
     }
 
-    public enum SkyblockAddonsGuiTab {
-        FEATURES, FIXES, GUI_FEATURES, GENERAL_SETTINGS
+    public enum GuiTab {
+        FEATURES, FIXES, GUI_FEATURES, GENERAL_SETTINGS;
+
+        public Set<Feature> getFeatures() {
+            switch (this) {
+                case FEATURES: return Feature.getFeatures();
+                case FIXES: return Feature.getFixes();
+                case GUI_FEATURES: return Feature.getGuiFeatures();
+                case GENERAL_SETTINGS: return Feature.getGeneralFeatures();
+            }
+            return null;
+        }
     }
 
     public enum FeatureSetting {
@@ -351,20 +400,26 @@ public class EnumUtils {
         BACKPACK_STYLE,
         SHOW_ONLY_WHEN_HOLDING_SHIFT,
         MAKE_INVENTORY_COLORED,
-        CHANGE_BAR_COLOR_WITH_POTIONS
+        CHANGE_BAR_COLOR_WITH_POTIONS,
+        ENABLE_MESSAGE_WHEN_ACTION_PREVENTED
     }
 
     @SuppressWarnings("deprecation")
     public enum FeatureCredit {
+        // If you make a feature, feel free to add your name here with an associated website of your choice.
+
         INVENTIVE_TALENT("InventiveTalent", "inventivetalent.org", Feature.MAGMA_BOSS_TIMER),
         FSCK("fsck", "github.com/fsckmc", Feature.AVOID_BREAKING_BOTTOM_SUGAR_CANE),
-        ORCHID_ALLOY("orchidalloy", "github.com/orchidalloy", Feature.SUMMONING_EYE_ALERT, Feature.FISHING_SOUND_INDICATOR),
+        ORCHID_ALLOY("orchidalloy", "github.com/orchidalloy", Feature.SUMMONING_EYE_ALERT, Feature.FISHING_SOUND_INDICATOR, Feature.ORGANIZE_ENCHANTMENTS),
         HIGH_CRIT("HighCrit", "github.com/HighCrit", Feature.PREVENT_MOVEMENT_ON_DEATH),
         MOULBERRY("Moulberry", "github.com/Moulberry", Feature.DONT_RESET_CURSOR_INVENTORY),
-        TOMOCRAFTER("tomocrafter","github.com/tomocrafter", Feature.AVOID_BLINKING_NIGHT_VISION),
+        TOMOCRAFTER("tomocrafter","github.com/tomocrafter", Feature.AVOID_BLINKING_NIGHT_VISION, Feature.SLAYER_INDICATOR),
         DAPIGGUY("DaPigGuy", "github.com/DaPigGuy", Feature.MINION_DISABLE_LOCATION_WARNING),
         COMNIEMEER("comniemeer","github.com/comniemeer", Feature.JUNGLE_AXE_COOLDOWN),
-        DIDI_SKYWALKER("DidiSkywalker", "github.com/didiskywalker", Feature.ITEM_PICKUP_LOG, Feature.HEALTH_UPDATES, Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, Feature.CRAFTING_PATTERNS);
+        KEAGEL("Keagel", "github.com/Keagel", Feature.ONLY_MINE_ORES_DEEP_CAVERNS),
+        SUPERHIZE("SuperHiZe", "github.com/superhize", Feature.SPECIAL_ZEALOT_ALERT),
+        DIDI_SKYWALKER("DidiSkywalker", "github.com/didiskywalker", Feature.ITEM_PICKUP_LOG, Feature.HEALTH_UPDATES, Feature.REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, Feature.CRAFTING_PATTERNS),
+        GARY("GARY_", "github.com/occanowey", Feature.ONLY_MINE_VALUABLES_NETHER);
 
         private Set<Feature> features;
         private String author;
@@ -403,7 +458,7 @@ public class EnumUtils {
         private String tag;
 
         Rarity(String s) {
-            this.tag = "\u00A7"+s;
+            this.tag = "§"+s;
         }
 
         public static Rarity getRarity(ItemStack item) {
@@ -435,6 +490,75 @@ public class EnumUtils {
                     ". Please report any bugs that haven't been found yet. Thank you.", 36).replace("\r", "").split(Pattern.quote("\n"));
             String text = WordUtils.wrap(message.getMessage(variables), 36).replace("\r", "");
             return text.split(Pattern.quote("\n"));
+        }
+    }
+
+    public enum SkillType {
+        FARMING("Farming", Items.golden_hoe),
+        MINING("Mining", Items.diamond_pickaxe),
+        COMBAT("Combat", Items.iron_sword),
+        FORAGING("Foraging", Item.getItemFromBlock(Blocks.sapling)),
+        FISHING("Fishing", Items.fishing_rod),
+        ENCHANTING("Enchanting", Item.getItemFromBlock(Blocks.enchanting_table)),
+        ALCHEMY("Alchemy", Items.brewing_stand),
+        CARPENTRY("Carpentry", Item.getItemFromBlock(Blocks.crafting_table)),
+        RUNECRAFTING("Runecrafting", Items.magma_cream),
+        OTHER(null, null);
+
+        private String skillName;
+        private ItemStack item;
+
+        SkillType(String skillName, Item item) {
+            this.skillName = skillName;
+            this.item = new ItemStack(item);
+        }
+
+        public static SkillType getFromString(String text) {
+            for (SkillType skillType : values()) {
+                if (skillType.skillName != null && skillType.skillName.equals(text)) {
+                    return skillType;
+                }
+            }
+            return OTHER;
+        }
+
+        public ItemStack getItem() {
+            return item;
+        }
+    }
+
+    public enum DrawType {
+        SKELETON_BAR,
+        BAR,
+        TEXT,
+        PICKUP_LOG,
+        DEFENCE_ICON,
+        REVENANT_PROGRESS
+    }
+
+    public enum Social {
+        YOUTUBE(new ResourceLocation("skyblockaddons", "youtube.png"), "https://www.youtube.com/channel/UCYmE9-052frn0wQwqa6i8_Q"),
+        DISCORD(new ResourceLocation("skyblockaddons", "discord.png"), "https://discordapp.com/invite/PqTAEek"),
+        GITHUB(new ResourceLocation("skyblockaddons", "github.png"), "https://github.com/BiscuitDevelopment/SkyblockAddons");
+
+        private ResourceLocation resourceLocation;
+        private URI url;
+
+        Social(ResourceLocation resourceLocation, String url) {
+            this.resourceLocation = resourceLocation;
+            try {
+                this.url = new URI(url);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public ResourceLocation getResourceLocation() {
+            return resourceLocation;
+        }
+
+        public URI getUrl() {
+            return url;
         }
     }
 }
