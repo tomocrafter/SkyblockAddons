@@ -4,7 +4,7 @@ import net.minecraftforge.fml.common.asm.transformers.deobf.FMLDeobfuscatingRema
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
-public interface Transformer {
+public interface ITransformer {
 
     String[] getClassName();
 

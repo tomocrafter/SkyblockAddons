@@ -1,19 +1,13 @@
-package codes.biscuit.skyblockaddons.mixins;
+package codes.biscuit.skyblockaddons.asm.hooks;
 
 import codes.biscuit.skyblockaddons.SkyblockAddons;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiNewChat;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.IChatComponent;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
-@Mixin(GuiNewChat.class)
-public class MixinGuiNewChat {
+public class GuiNewChatHook {
 
-    @Redirect(method = "printChatMessageWithOptionalDeletion", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/IChatComponent;getUnformattedText()Ljava/lang/String;"))
-    private String printChatMessageWithOptionalDeletion(IChatComponent iChatComponent) {
+    public static String getUnformattedText(IChatComponent iChatComponent) {
         SkyblockAddons main = SkyblockAddons.getInstance();
         ICommandSender player = Minecraft.getMinecraft().thePlayer;
         if (main != null && main.getUtils().isDevEnviroment() || (player != null && player.getName().equals("Biscut"))) {
