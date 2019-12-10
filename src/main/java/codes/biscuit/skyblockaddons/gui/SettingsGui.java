@@ -79,46 +79,6 @@ public class SettingsGui extends GuiScreen {
                 addButton(setting);
             }
         }
-
-        addTabs();
-    }
-
-    @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    private void addTabs() {
-        if (true) return;
-        int collumn = 1;
-        for (EnumUtils.GuiTab loopTab : EnumUtils.GuiTab.values()) {
-            if (lastTab != loopTab) {
-                String text = "";
-                switch (loopTab) {
-                    case FEATURES:
-                        text = Message.TAB_FEATURES.getMessage();
-                        break;
-                    case FIXES:
-                        text = Message.TAB_FIXES.getMessage();
-                        break;
-                    case GUI_FEATURES:
-                        text = Message.TAB_GUI_FEATURES.getMessage();
-                        break;
-                    case GENERAL_SETTINGS:
-                        text = Message.TAB_GENERAL_SETTINGS.getMessage();
-                        break;
-                }
-                int stringWidth = fontRendererObj.getStringWidth(text);
-                int tabX = 0;
-                int halfWidth = width/2;
-                if (collumn == 1) {
-                    tabX = (int)Math.round(halfWidth-140-(stringWidth/2)*1.4);
-                } else if (collumn == 2) {
-                    tabX = (int)Math.round(halfWidth-(stringWidth/2)*1.4);
-                } else if (collumn == 3) {
-                    tabX = (int)Math.round(halfWidth+140-(stringWidth/2)*1.4);
-                }
-                buttonList.add(new ButtonSwitchTab(tabX, 70, (int)(stringWidth*1.4),
-                        14, text, main, loopTab, lastTab));
-                collumn++;
-            }
-        }
     }
 
 
@@ -211,6 +171,11 @@ public class SettingsGui extends GuiScreen {
             }
         } else if (feature == Feature.SHOW_BACKPACK_PREVIEW) {
             main.getConfigValues().setBackpackStyle(main.getConfigValues().getBackpackStyle().getNextType());
+            closingGui = true;
+            Minecraft.getMinecraft().displayGuiScreen(new SettingsGui(main, feature, page, lastPage, lastTab, settings));
+            closingGui = false;
+        } else if(feature == Feature.POWER_ORB_STATUS_DISPLAY && abstractButton instanceof ButtonSolid) {
+            main.getConfigValues().setPowerOrbDisplayStyle(main.getConfigValues().getPowerOrbDisplayStyle().getNextType());
             closingGui = true;
             Minecraft.getMinecraft().displayGuiScreen(new SettingsGui(main, feature, page, lastPage, lastTab, settings));
             closingGui = false;
@@ -328,6 +293,10 @@ public class SettingsGui extends GuiScreen {
             }
 
             buttonList.add(new ButtonToggleTitle(x, y, Message.SETTING_ENABLE_MESSAGE_WHEN_ACTION_PREVENTED.getMessage(), main, settingFeature));
+        } else if(setting == EnumUtils.FeatureSetting.POWER_ORB_DISPLAY_STYLE) {
+            boxWidth = 140;
+            x = halfWidth-(boxWidth/2);
+            buttonList.add(new ButtonSolid(x, y, 140, 20, Message.SETTING_POWER_ORB_DISPLAY_STYLE.getMessage(), main, feature));
         }
         row++;
     }

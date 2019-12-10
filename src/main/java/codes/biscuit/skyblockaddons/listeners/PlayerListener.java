@@ -10,6 +10,7 @@ import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.monster.EntityBlaze;
+import net.minecraft.entity.monster.EntityEnderman;
 import net.minecraft.entity.monster.EntityMagmaCube;
 import net.minecraft.entity.monster.EntitySlime;
 import net.minecraft.entity.projectile.EntityFishHook;
@@ -18,15 +19,14 @@ import net.minecraft.inventory.Container;
 import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.Vec3;
+import net.minecraft.util.*;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.event.entity.EntityEvent;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.player.AttackEntityEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.event.world.ChunkEvent;
@@ -41,10 +41,8 @@ import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,6 +53,8 @@ public class PlayerListener {
     private final Pattern PROFILE_CHAT_PATTERN = Pattern.compile("§aYou are playing on profile: §e([A-Za-z]+).*");
     private final Pattern SWITCH_PROFILE_CHAT_PATTERN = Pattern.compile("§aYour profile was changed to: §e([A-Za-z]+).*");
     private final Pattern COLLECTIONS_CHAT_PATTERN = Pattern.compile("§.\\+(?:§[0-9a-f])?([0-9.]+) §?[0-9a-f]?([A-Za-z]+) (\\([0-9.,]+/[0-9.,]+\\))");
+    private final Set<String> randomMessages = new HashSet<>(Arrays.asList("I feel like I can fly!", "What was in that soup?", "Hmm… tasty!", "Hmm... tasty!", "You can now fly for 2 minutes.", "Your Magical Mushroom Soup flight has been extended for 2 extra minutes."));
+
 
     private boolean sentUpdate = false;
     private long lastWorldJoin = -1;
@@ -70,13 +70,14 @@ public class PlayerListener {
     private long lastBobberEnteredWater = Long.MAX_VALUE;
     private boolean oldBobberIsInWater = false;
     private double oldBobberPosY = 0;
+    private int tickers = 0;
 
     private Set<CoordsPair> recentlyLoadedChunks = new HashSet<>();
     private EnumUtils.MagmaTimerAccuracy magmaAccuracy = EnumUtils.MagmaTimerAccuracy.NO_DATA;
     private int magmaTime = 0;
     private int recentMagmaCubes = 0;
     private int recentBlazes = 0;
-
+    
 //    private Feature.Accuracy magmaTimerAccuracy = null;
 //    private long magmaTime = 7200;
 
@@ -123,7 +124,7 @@ public class PlayerListener {
     public void onChatReceive(ClientChatReceivedEvent e) {
         String message = e.message.getUnformattedText();
         if (e.type == 2) {
-            if (message.endsWith("\u270E Mana§r")) {
+            if (message.contains("✎ Mana")) {
                 try {
                     String returnMessage;
                     if (message.startsWith("§d§lTHE END RACE")) { // Might be doing the end race!
@@ -138,6 +139,7 @@ public class PlayerListener {
                         returnMessage = messageSplit[0];
                     } else {
                         // Example Action Bar: '§c586/586❤     §a247§a❈ Defense     §b173/173✎ Mana§r'
+                        // Another Possibility w/ Tickers: `§c1072/1072❤     §a582§a❈ Defense     §b419/419✎ Mana    §e§lⓄⓄⓄⓄ§7§l§r`
                         String[] splitMessage = message.split(" {5}");
                         String healthPart = splitMessage[0];
                         String defencePart = null;
@@ -158,6 +160,24 @@ public class PlayerListener {
                             manaPart = splitMessage[2];
                         } else {
                             manaPart = splitMessage[1];
+                        }
+
+                        tickers = -1;
+
+                        String tickerPart = null;
+                        if (manaPart.contains("Ⓞ")) { // Scorpion Foil Tickers
+                            tickers = 0;
+                            String[] parts = manaPart.split(" {4}");
+                            manaPart = parts[0];
+                            tickerPart = parts[1];
+                            System.out.println(tickerPart);
+                            for (char character : tickerPart.toCharArray()) {
+                                if (character == '7') { // If it reaches a grey color code, it means those tickers are used, so stop.
+                                    break;
+                                } else if (character == 'Ⓞ') { // Add the tickers that aren't grey.
+                                    tickers++;
+                                }
+                            }
                         }
                         if (healthPart.contains("+")) {
                             healthPart = healthPart.substring(0, healthPart.indexOf('+'));
@@ -201,6 +221,9 @@ public class PlayerListener {
                             if (showHealth || showDefence) newMessage.append("     ");
                             newMessage.append(manaPart);
                         }
+                        if (tickerPart != null && main.getConfigValues().isDisabled(Feature.SCORPION_FOIL_TICKER_DISPLAY)) {
+                            newMessage.append("    ").append(tickerPart);
+                        }
                         returnMessage = newMessage.toString();
                     }
                     if (main.isUsingOofModv1() && returnMessage.trim().length() == 0) {
@@ -232,11 +255,23 @@ public class PlayerListener {
                 main.getUtils().playLoudSound("random.orb", 0.5);
                 main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
                 main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
-            } else if (main.getConfigValues().isEnabled(Feature.SPECIAL_ZEALOT_ALERT) && e.message.getFormattedText().equals("§r§aA special §r§5Zealot §r§ahas spawned nearby!§r")) {
-                main.getUtils().playLoudSound("random.orb", 0.5);
-                main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
-                main.getRenderListener().setTitleFeature(Feature.SPECIAL_ZEALOT_ALERT);
-                main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
+
+            } else if (e.message.getFormattedText().equals("§r§aA special §r§5Zealot §r§ahas spawned nearby!§r")) {
+                if (main.getConfigValues().isEnabled(Feature.SPECIAL_ZEALOT_ALERT)) {
+                    main.getUtils().playLoudSound("random.orb", 0.5);
+                    main.getRenderListener().setTitleFeature(Feature.SUMMONING_EYE_ALERT);
+                    main.getRenderListener().setTitleFeature(Feature.SPECIAL_ZEALOT_ALERT);
+                    main.getScheduler().schedule(Scheduler.CommandType.RESET_TITLE_FEATURE, main.getConfigValues().getWarningSeconds());
+                }
+                if (main.getConfigValues().isEnabled(Feature.ZEALOT_COUNTER)) {
+                    // Edit the message to include counter.
+                    e.message = new ChatComponentText(e.message.getFormattedText() + EnumChatFormatting.GRAY + " (" + main.getPersistentValues().getKills() + ")");
+                    main.getPersistentValues().setKills(-1); // This is triggered before the death of the killed zealot, so this is set to -1 to account for that.
+                }
+            }
+
+            if (main.getConfigValues().isEnabled(Feature.DISABLE_MAGICAL_SOUP_MESSAGES) && randomMessages.contains(message)) {
+                e.setCanceled(true);
             }
 
             Matcher matcher = ABILITY_CHAT_PATTERN.matcher(e.message.getFormattedText());
@@ -362,7 +397,26 @@ public class PlayerListener {
     @SubscribeEvent
     public void onEntityEvent(LivingEvent.LivingUpdateEvent e) {
         Entity entity = e.entity;
+
         if (main.getUtils().isOnSkyblock() && entity instanceof EntityArmorStand && entity.hasCustomName()) {
+            String customNameTag = entity.getCustomNameTag();
+
+            PowerOrb powerOrb = PowerOrb.getByDisplayname(customNameTag);
+            if (powerOrb != null
+                    && Minecraft.getMinecraft().thePlayer != null
+                    && powerOrb.isInRadius(entity.getPosition().distanceSq(Minecraft.getMinecraft().thePlayer.getPosition()))) {
+                String[] customNameTagSplit = customNameTag.split(" ");
+                String secondsString = customNameTagSplit[customNameTagSplit.length - 1]
+                        .replaceAll("§e", "")
+                        .replaceAll("s", "");
+                try {
+                    // Apparently they don't have a second count for moment after spawning, that's what this try-catch is for
+                    int seconds = Integer.parseInt(secondsString);
+                    PowerOrbManager.getInstance().put(powerOrb, seconds);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+
             if (main.getUtils().getLocation() == EnumUtils.Location.ISLAND) {
                 int cooldown = main.getConfigValues().getWarningSeconds() * 1000 + 5000;
                 if (main.getConfigValues().isEnabled(Feature.MINION_FULL_WARNING) &&
@@ -388,29 +442,35 @@ public class PlayerListener {
                         main.getRenderListener().setSubtitleFeature(Feature.MINION_STOP_WARNING);
                         main.getScheduler().schedule(Scheduler.CommandType.RESET_SUBTITLE_FEATURE, main.getConfigValues().getWarningSeconds());
                     }
-                } // Apparently it no longer has a health bar
-            }// else if (magmaAccuracy == EnumUtils.MagmaTimerAccuracy.SPAWNED &&
-//                    main.getConfigValues().isEnabled(Feature.MAGMA_BOSS_TIMER)) {
-//                String name = main.getUtils().stripColor(entity.getCustomNameTag());
-//                if (name.contains("Magma Cube Boss")) {
-//                    magmaBossHealth = Integer.valueOf(name.split(Pattern.quote("Magma Cube Boss "))[1].split(Pattern.quote("/"))[0]);
-//                }
-//            }
+                }
+            }
         }
     }
+    
+    private Set<Entity> countedEndermen = new HashSet<>();
+    
+    @SubscribeEvent
+    public void onAttack(AttackEntityEvent e) {
+    	if (main.getConfigValues().isEnabled(Feature.ZEALOT_COUNTER) && e.target instanceof EntityEnderman) {
+            List<EntityArmorStand> stands = Minecraft.getMinecraft().theWorld.getEntitiesWithinAABB(EntityArmorStand.class,
+                    new AxisAlignedBB(e.target.posX - 1, e.target.posY, e.target.posZ - 1, e.target.posX + 1, e.target.posY + 5, e.target.posZ + 1));
+            if (stands.isEmpty()) return;
 
-    // Doesn't work at the moment, using line 378 instead.
-//    @SubscribeEvent
-//    public void onDeath(LivingDeathEvent e) {
-//        if (e.entity instanceof EntityMagmaCube) {
-//            EntitySlime magma = (EntitySlime)e.entity;
-//            if (magma.getSlimeSize() > 10 && (magmaAccuracy == EnumUtils.MagmaTimerAccuracy.SPAWNED ||
-//                    magmaAccuracy == EnumUtils.MagmaTimerAccuracy.SPAWNED_PREDICTION)) {
-//                magmaAccuracy = EnumUtils.MagmaTimerAccuracy.ABOUT;
-//                magmaTime = 7200;
-//            }
-//        }
-//    }
+            EntityArmorStand armorStand = stands.get(0);
+            if (armorStand.hasCustomName() && armorStand.getCustomNameTag().contains("Zealot")) {
+                countedEndermen.add(e.target);
+            }
+    	}
+    }
+    
+    @SubscribeEvent
+    public void onDeath(LivingDeathEvent e) {
+    	if (main.getConfigValues().isEnabled(Feature.ZEALOT_COUNTER) && e.entity instanceof EntityEnderman) {
+            if (countedEndermen.remove(e.entity)) {
+                main.getPersistentValues().addKill();
+            }
+    	}
+    }
 
     private long lastBossSpawnPost = -1;
     private long lastBossDeathPost = -1;
@@ -664,64 +724,6 @@ public class PlayerListener {
         }
     }
 
-    public boolean shouldResetMouse() {
-        return System.currentTimeMillis() - lastClosedInv > 100;
-    }
-
-    public boolean didntRecentlyJoinWorld() {
-        return System.currentTimeMillis() - lastWorldJoin > 3000;
-    }
-
-    public enum GUIType {
-        MAIN,
-        EDIT_LOCATIONS
-    }
-
-    Integer getHealthUpdate() {
-        return healthUpdate;
-    }
-
-    public EnumUtils.MagmaTimerAccuracy getMagmaAccuracy() {
-        return magmaAccuracy;
-    }
-
-    int getMagmaTime() {
-        return magmaTime;
-    }
-
-    public int getRecentBlazes() {
-        return recentBlazes;
-    }
-
-    public int getRecentMagmaCubes() {
-        return recentMagmaCubes;
-    }
-
-    public void setRecentBlazes(int recentBlazes) {
-        this.recentBlazes = recentBlazes;
-    }
-
-    public void setRecentMagmaCubes(int recentMagmaCubes) {
-        this.recentMagmaCubes = recentMagmaCubes;
-    }
-
-    public void setMagmaAccuracy(EnumUtils.MagmaTimerAccuracy magmaAccuracy) {
-        this.magmaAccuracy = magmaAccuracy;
-    }
-
-    @SuppressWarnings("unused")
-    public void setMagmaTime(int magmaTime, boolean save) {
-        this.magmaTime = magmaTime;
-//        main.getConfigValues().setNextMagmaTimestamp(System.currentTimeMillis()+(magmaTime*1000));
-//        if (save) {
-//            main.getConfigValues().saveConfig();
-//        }
-    }
-
-    public Set<CoordsPair> getRecentlyLoadedChunks() {
-        return recentlyLoadedChunks;
-    }
-
     private boolean shouldTriggerFishingIndicator() {
         Minecraft mc =  Minecraft.getMinecraft();
         if (mc.thePlayer != null && mc.thePlayer.fishEntity != null && mc.thePlayer.getHeldItem() != null
@@ -746,7 +748,65 @@ public class PlayerListener {
         return false;
     }
 
+    public enum GUIType {
+        MAIN,
+        EDIT_LOCATIONS
+    }
+
+    public boolean shouldResetMouse() {
+        return System.currentTimeMillis() - lastClosedInv > 100;
+    }
+
+    public boolean didntRecentlyJoinWorld() {
+        return System.currentTimeMillis() - lastWorldJoin > 3000;
+    }
+
+    Integer getHealthUpdate() {
+        return healthUpdate;
+    }
+
+    public EnumUtils.MagmaTimerAccuracy getMagmaAccuracy() {
+        return magmaAccuracy;
+    }
+
+    int getMagmaTime() {
+        return magmaTime;
+    }
+
+    public int getRecentBlazes() {
+        return recentBlazes;
+    }
+
+    public int getRecentMagmaCubes() {
+        return recentMagmaCubes;
+    }
+    
+    public void setRecentBlazes(int recentBlazes) {
+        this.recentBlazes = recentBlazes;
+    }
+
+    public void setRecentMagmaCubes(int recentMagmaCubes) {
+        this.recentMagmaCubes = recentMagmaCubes;
+    }
+
+    public void setMagmaAccuracy(EnumUtils.MagmaTimerAccuracy magmaAccuracy) {
+        this.magmaAccuracy = magmaAccuracy;
+    }
+
+    @SuppressWarnings("unused")
+    public void setMagmaTime(int magmaTime, boolean save) {
+        this.magmaTime = magmaTime;
+    }
+
+    public Set<CoordsPair> getRecentlyLoadedChunks() {
+        return recentlyLoadedChunks;
+    }
+
     public void setLastSecondHealth(int lastSecondHealth) {
         this.lastSecondHealth = lastSecondHealth;
+    }
+
+    public int getTickers() {
+        return tickers;
     }
 }

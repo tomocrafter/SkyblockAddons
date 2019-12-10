@@ -18,7 +18,7 @@ public enum Feature {
     DISABLE_EMBER_ROD(2, Message.SETTING_DISABLE_EMBER_ROD_ABILITY, false),
     SHOW_BACKPACK_PREVIEW(3, Message.SETTING_SHOW_BACKPACK_PREVIEW, false, EnumUtils.FeatureSetting.BACKPACK_STYLE, EnumUtils.FeatureSetting.SHOW_ONLY_WHEN_HOLDING_SHIFT, EnumUtils.FeatureSetting.MAKE_INVENTORY_COLORED),
     HIDE_BONES(4, Message.SETTING_HIDE_SKELETON_HAT_BONES, false),
-    SKELETON_BAR(5, Message.SETTING_SKELETON_HAT_BONES_BAR, new GuiFeatureData(EnumUtils.DrawType.SKELETON_BAR, EnumUtils.AnchorPoint.BOTTOM_MIDDLE, -354, -47), false),
+    SKELETON_BAR(5, Message.SETTING_SKELETON_HAT_BONES_BAR, new GuiFeatureData(EnumUtils.DrawType.SKELETON_BAR, EnumUtils.AnchorPoint.BOTTOM_MIDDLE, 159, -11), false),
     HIDE_FOOD_ARMOR_BAR(6, Message.SETTING_HIDE_FOOD_AND_ARMOR, false),
     FULL_INVENTORY_WARNING(7, Message.SETTING_FULL_INVENTORY_WARNING, new GuiFeatureData(ConfigColor.RED), false),
     MAGMA_BOSS_TIMER(8, Message.SETTING_MAGMA_BOSS_TIMER, new GuiFeatureData(EnumUtils.DrawType.TEXT, ConfigColor.GOLD, EnumUtils.AnchorPoint.TOP_RIGHT, -18, 13), false, EnumUtils.FeatureSetting.ENABLED_IN_OTHER_GAMES),
@@ -77,6 +77,10 @@ public enum Feature {
     ENABLE_MESSAGE_WHEN_BREAKING_STEMS(61, null, false),
     ENABLE_MESSAGE_WHEN_MINING_NETHER(62, null, false),
     HIDE_PET_HEALTH_BAR(63, Message.SETTING_HIDE_PET_HEALTH_BAR, false),
+    DISABLE_MAGICAL_SOUP_MESSAGES(64, Message.SETTING_DISABLE_MAGICAL_SOUP_MESSAGE, true),
+    POWER_ORB_STATUS_DISPLAY(65, Message.SETTING_POWER_ORB_DISPLAY, new GuiFeatureData(EnumUtils.DrawType.POWER_ORB_DISPLAY, null, EnumUtils.AnchorPoint.TOP_LEFT, 25, 48), false, EnumUtils.FeatureSetting.POWER_ORB_DISPLAY_STYLE),
+    ZEALOT_COUNTER(66, Message.SETTING_ZEALOT_COUNTER, new GuiFeatureData(EnumUtils.DrawType.TEXT, ConfigColor.DARK_AQUA, EnumUtils.AnchorPoint.TOP_RIGHT, -45, 48), false),
+    SCORPION_FOIL_TICKER_DISPLAY(67, Message.SETTING_SCORPION_FOIL_TICKER_DISPLAY, new GuiFeatureData(EnumUtils.DrawType.TICKER, null, EnumUtils.AnchorPoint.BOTTOM_MIDDLE, 158, -29), false),
 
     HIDE_GREY_ENCHANTS(100, null, false), // allow remote disabling this feature
 
@@ -100,14 +104,15 @@ public enum Feature {
             AVOID_BREAKING_STEMS, MAGMA_WARNING, HIDE_PLAYERS_IN_LOBBY, MINION_STOP_WARNING, SHOW_ITEM_ANVIL_USES, LOCK_SLOTS,
             DONT_OPEN_PROFILES_WITH_BOW, STOP_DROPPING_SELLING_RARE_ITEMS, MAKE_ENDERCHESTS_GREEN_IN_END, SPECIAL_ZEALOT_ALERT,
             FISHING_SOUND_INDICATOR, DONT_RESET_CURSOR_INVENTORY, REPLACE_ROMAN_NUMERALS_WITH_NUMBERS, DROP_CONFIRMATION, ORGANIZE_ENCHANTMENTS,
-            JUNGLE_AXE_COOLDOWN, MINION_DISABLE_LOCATION_WARNING, SHOW_ITEM_COOLDOWNS, ONLY_MINE_ORES_DEEP_CAVERNS, ONLY_MINE_VALUABLES_NETHER, SUMMONING_EYE_ALERT, AVOID_BREAKING_BOTTOM_SUGAR_CANE));
+            JUNGLE_AXE_COOLDOWN, MINION_DISABLE_LOCATION_WARNING, SHOW_ITEM_COOLDOWNS, ONLY_MINE_ORES_DEEP_CAVERNS, ONLY_MINE_VALUABLES_NETHER, SUMMONING_EYE_ALERT, AVOID_BREAKING_BOTTOM_SUGAR_CANE, DISABLE_MAGICAL_SOUP_MESSAGES));
 
     private static Set<Feature> FIXES = new LinkedHashSet<>(Arrays.asList(HIDE_BONES, DISABLE_EMBER_ROD, HIDE_AUCTION_HOUSE_PLAYERS,
             STOP_BOW_CHARGE_FROM_RESETTING, AVOID_PLACING_ENCHANTED_ITEMS, PREVENT_MOVEMENT_ON_DEATH, AVOID_BLINKING_NIGHT_VISION,
             HIDE_PET_HEALTH_BAR));
 
     private static Set<Feature> GUI_FEATURES = new LinkedHashSet<>(Arrays.asList(MAGMA_BOSS_TIMER, MANA_BAR, MANA_TEXT, DEFENCE_ICON, DEFENCE_TEXT,
-            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE, SLAYER_INDICATOR));
+            DEFENCE_PERCENTAGE, HEALTH_BAR, HEALTH_TEXT, SKELETON_BAR, HEALTH_UPDATES, ITEM_PICKUP_LOG, DARK_AUCTION_TIMER, SKILL_DISPLAY, SPEED_PERCENTAGE, SLAYER_INDICATOR,
+            POWER_ORB_STATUS_DISPLAY, ZEALOT_COUNTER, SCORPION_FOIL_TICKER_DISPLAY));
 
     private static Set<Feature> GENERAL_FEATURES = new LinkedHashSet<>(Arrays.asList(TEXT_STYLE, WARNING_TIME));
 
@@ -170,7 +175,7 @@ public enum Feature {
             if (guiFeatureData.getDrawType() == EnumUtils.DrawType.BAR) {
                 main.getRenderListener().drawBar(this, scale, mc, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.SKELETON_BAR) {
-                main.getRenderListener().drawSkeletonBar(scale, mc, buttonLocation);
+                main.getRenderListener().drawSkeletonBar(mc, scale, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.TEXT) {
                 main.getRenderListener().drawText(this, scale, mc, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.PICKUP_LOG) {
@@ -179,6 +184,10 @@ public enum Feature {
                 main.getRenderListener().drawIcon(scale, mc, buttonLocation);
             } else if (guiFeatureData.getDrawType() == EnumUtils.DrawType.REVENANT_PROGRESS) {
                 main.getRenderListener().drawRevenantIndicator(scale, mc, buttonLocation);
+            } else if(guiFeatureData.getDrawType() == EnumUtils.DrawType.POWER_ORB_DISPLAY) {
+                main.getRenderListener().drawPowerOrbStatus(mc, scale, buttonLocation);
+            } else if(guiFeatureData.getDrawType() == EnumUtils.DrawType.TICKER) {
+                main.getRenderListener().drawScorpionFoilTicker(mc, scale, buttonLocation);
             }
         }
     }

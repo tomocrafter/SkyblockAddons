@@ -1,6 +1,7 @@
 package codes.biscuit.skyblockaddons.asm;
 
 import codes.biscuit.skyblockaddons.asm.utils.TransformerClass;
+import codes.biscuit.skyblockaddons.asm.utils.TransformerMethod;
 import codes.biscuit.skyblockaddons.tweaker.transformer.ITransformer;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -17,15 +18,13 @@ public class RendererLivingEntityTransformer implements ITransformer {
      */
     @Override
     public String[] getClassName() {
-        return new String[]{"net.minecraft.client.renderer.entity.RendererLivingEntity"};
+        return new String[]{TransformerClass.RendererLivingEntity.getTransformerName()};
     }
 
     @Override
     public void transform(ClassNode classNode, String name) {
-        for (MethodNode methodNode : classNode.methods) { // Loop through all methods inside of the class.
-
-            String methodName = mapMethodName(classNode, methodNode);
-            if (nameMatches(methodName, "rotateCorpse", "func_77043_a")) {
+        for (MethodNode methodNode : classNode.methods) {
+            if (TransformerMethod.rotateCorpse.matches(methodNode)) {
 
                 // Objective:
                 // Find: s.equals("Dinnerbone");
@@ -55,7 +54,7 @@ public class RendererLivingEntityTransformer implements ITransformer {
                     AbstractInsnNode abstractNode = iterator.next();
                     if (abstractNode instanceof MethodInsnNode && abstractNode.getOpcode() == Opcodes.INVOKEVIRTUAL) {
                         MethodInsnNode methodInsnNode = (MethodInsnNode) abstractNode;
-                        if (methodInsnNode.owner.equals(TransformerClass.EntityPlayer.getNameRaw()) && methodInsnNode.name.equals("isWearing")) {
+                        if (methodInsnNode.owner.equals(TransformerClass.EntityPlayer.getNameRaw()) && TransformerMethod.isWearing.matches(methodInsnNode)) {
                             methodNode.instructions.insertBefore(abstractNode, new MethodInsnNode(Opcodes.INVOKESTATIC, "codes/biscuit/skyblockaddons/asm/hooks/RendererLivingEntityHook",
                                     "isWearing", "("+TransformerClass.EntityPlayer.getName()+TransformerClass.EnumPlayerModelParts.getName()+")Z", false)); // RendererLivingEntityHook.equals(s, "Dinnerbone");
 

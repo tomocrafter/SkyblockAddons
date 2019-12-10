@@ -32,3 +32,14 @@ localization management platform to help us serve the mod in many languages!
 [Check out their website here](https://crowdin.com/)!
 
 Also thanks for our countless translators who help translate this mod!
+
+For Contributors
+------
+
+Make sure to add this VM argument to your debug configuration or your IDE's equivalent, so all the transformers
+are applied properly in your dev environment!
+```-Dfml.coreMods.load=codes.biscuit.skyblockaddons.tweaker.SkyblockAddonsLoadingPlugin```
+
+Note: If your jar build is failing because some code is trying to access private methods or fields, 
+you may want to re-run the gradle tasks `setupDecompWorkspace` and `setupDevWorkspace` so 
+the access transformer is applied to the source code!
